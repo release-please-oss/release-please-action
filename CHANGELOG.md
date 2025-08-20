@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.1.0](https://github.com/release-please-oss/release-please-action/compare/v5.0.0...v5.1.0) (2025-08-20)
+
+
+### Miscellaneous Chores
+
+* release 5.1.0 ([4540726](https://github.com/release-please-oss/release-please-action/commit/4540726ce5065a542ec4a69fa0b0b013e3799cea))
+
 ## [5.0.0](https://github.com/release-please-oss/release-please-action/compare/v4.2.0...v5.0.0) (2025-08-20)
 
 
