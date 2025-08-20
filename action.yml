@@ -1,4 +1,4 @@
-name: 'release-please'
+name: 'release-please-oss-action'
 description: 'automated releases based on conventional commits'
 author: Release Please OSS
 inputs:
