@@ -53,5 +53,5 @@ jobs:
       - name: Install NodeJS dependencies
         if: ${{ steps.nodejs-cache.outputs.cache-hit != 'true' }}
         run: npm ci --no-audit
-      - name: Run tests
+      - name: Run build
         run: npm run build
