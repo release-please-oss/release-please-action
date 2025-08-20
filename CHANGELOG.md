@@ -1,5 +1,21 @@
 # Changelog
 
+## [5.0.0](https://github.com/release-please-oss/release-please-action/compare/v4.2.0...v5.0.0) (2025-08-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* fork the repository
+
+### Features
+
+* update release-please to v17.1.2 ([72b0c40](https://github.com/release-please-oss/release-please-action/commit/72b0c407d0d7c0b5f12bb5dcd2886622b0e0899e))
+
+
+### Miscellaneous Chores
+
+* fork the repository ([c4401cb](https://github.com/release-please-oss/release-please-action/commit/c4401cb9a3321c79c6dce7cc69a03d85b94231e1))
+
 ## [4.2.0](https://github.com/googleapis/release-please-action/compare/v4.1.5...v4.2.0) (2025-03-07)
 
 
