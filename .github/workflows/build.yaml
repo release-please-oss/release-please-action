@@ -25,7 +25,7 @@ jobs:
       - name: Install NodeJS dependencies
         if: ${{ steps.nodejs-cache.outputs.cache-hit != 'true' }}
         run: npm ci --no-audit
-      - name: Run tests
+      - name: Run build
         run: npm run build
       - name: Generate GitHub token
         uses: actions/create-github-app-token@v2.1.1

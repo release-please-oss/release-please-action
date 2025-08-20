@@ -1,6 +1,6 @@
-name: 'release-please-action'
+name: 'release-please'
 description: 'automated releases based on conventional commits'
-author: Google LLC
+author: Release Please OSS
 inputs:
   token:
     description: 'GitHub token for creating and grooming release PRs, defaults to using secrets.GITHUB_TOKEN'

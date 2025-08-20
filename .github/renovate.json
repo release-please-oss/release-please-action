@@ -4,7 +4,7 @@
   "addLabels": [
     "dependencies"
   ],
-  "minimumReleaseAge": 14,
+  "minimumReleaseAge": "14",
   "rebaseWhen": "conflicted",
   "packageRules": [
     {
