@@ -4,6 +4,11 @@
 
 Automate releases with Conventional Commit Messages.
 
+## Attribution
+
+This project is a fork of [release-please-oss/release-please-action](https://github.com/release-please-oss/release-please-action),
+originally created by Google and licensed under Apache 2.0.
+
 ## Basic Configuration
 
 1. Create a `.github/workflows/release-please.yml` file with these contents:
@@ -24,7 +29,7 @@ Automate releases with Conventional Commit Messages.
      release-please:
        runs-on: ubuntu-latest
        steps:
-         - uses: googleapis/release-please-action@v4
+         - uses: release-please-oss/release-please-action@v4
            with:
              # this assumes that you have created a personal access token
              # (PAT) and configured it as a GitHub action secret named
@@ -47,13 +52,13 @@ Automate releases with Conventional Commit Messages.
 ## Advanced Release Configuration
 
 For any advanced configuration, please set up a
-[manifest config](https://github.com/googleapis/release-please/blob/master/docs/manifest-releaser.md)
+[manifest config](https://github.com/release-please-oss/release-please/blob/master/docs/manifest-releaser.md)
 and then configure this action as follows:
 
 ```yaml
 #...(same as above)
 steps:
-  - uses: googleapis/release-please-action@v4
+  - uses: release-please-oss/release-please-action@v4
     with:
       # this assumes that you have created a personal access token
       # (PAT) and configured it as a GitHub action secret named
@@ -68,7 +73,7 @@ steps:
 ## Action Inputs
 
 | input                      | description                                                                                                                            |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+|----------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
 | `token`                    | A GitHub secret token, the action defaults to using the special `secrets.GITHUB_TOKEN`                                                 |
 | `release-type`             | If specified, defines the release strategy to use for the repository. Reference [Release types supported](#release-types-supported)    |
 | `path`                     | create a release from a path other than the repository's root                                                                          |
@@ -83,7 +88,7 @@ steps:
 | `proxy-server`             | Configure a proxy servier in the form of `<host>:<port>` e.g. `proxy-host.com:8080`                                                    |
 | `skip-github-release`      | If `true`, do not attempt to create releases. This is useful if splitting release tagging from PR creation.                            |
 | `skip-github-pull-request` | If `true`, do not attempt to create release pull requests. This is useful if splitting release tagging from PR creation.               |
-| `skip-labeling`            | If `true`, do not attempt to label the PR.                                                                                          |
+| `skip-labeling`            | If `true`, do not attempt to label the PR.                                                                                             |
 
 ## GitHub Credentials
 
@@ -127,67 +132,73 @@ repository Settings > Actions > General.
 
 For more information about permissions:
 
-- GitHub APIs [protected by `contents` permission](https://docs.github.com/en/rest/overview/permissions-required-for-github-apps?apiVersion=2022-11-28#contents)
-- GitHub APIs [protected by `pull_requests` permission](https://docs.github.com/en/rest/overview/permissions-required-for-github-apps?apiVersion=2022-11-28#pull-requests)
-- Github Actions: [permissions for the `GITHUB_TOKEN`](https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token)
-- Github Repositories: [enabling workflows for forks of private repositories](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#enabling-workflows-for-private-repository-forks)
-- Github Actions: [assigning permissions to jobs](https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs)
+- GitHub APIs [protected by
+  `contents` permission](https://docs.github.com/en/rest/overview/permissions-required-for-github-apps?apiVersion=2022-11-28#contents)
+- GitHub APIs [protected by
+  `pull_requests` permission](https://docs.github.com/en/rest/overview/permissions-required-for-github-apps?apiVersion=2022-11-28#pull-requests)
+- Github Actions: [permissions for the
+  `GITHUB_TOKEN`](https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token)
+- Github
+  Repositories: [enabling workflows for forks of private repositories](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#enabling-workflows-for-private-repository-forks)
+- Github
+  Actions: [assigning permissions to jobs](https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs)
 
 ### Release Types Supported
 
 Release Please automates releases for the following flavors of repositories:
 
 | release type       | description                                                                                                                                                                                        |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `dart` | A repository with a pubspec.yaml and a CHANGELOG.md |
+|--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `dart`             | A repository with a pubspec.yaml and a CHANGELOG.md                                                                                                                                                |
 | `elixir`           | An elixir repository with a mix.exs and a CHANGELOG.md                                                                                                                                             |
-| `expo` | An Expo based React Native repository, with a package.json, app.json and CHANGELOG.md |
+| `expo`             | An Expo based React Native repository, with a package.json, app.json and CHANGELOG.md                                                                                                              |
 | `go`               | Go repository, with a CHANGELOG.md                                                                                                                                                                 |
 | `helm`             | A helm chart repository with a Chart.yaml and a CHANGELOG.md                                                                                                                                       |
-| `java`             | [A strategy that generates SNAPSHOT version after each release](https://github.com/googleapis/release-please/blob/main/docs/java.md)                                                               |
-| `krm-blueprint` | [A kpt package, with 1 or more KRM files and a CHANGELOG.md](https://github.com/GoogleCloudPlatform/blueprints/tree/main/catalog/project) |
-| `maven`            | [Strategy for Maven projects, generates SNAPSHOT version after each release and updates `pom.xml` automatically](https://github.com/googleapis/release-please/blob/main/docs/java.md)              |
+| `java`             | [A strategy that generates SNAPSHOT version after each release](https://github.com/release-please-oss/release-please/blob/main/docs/java.md)                                                               |
+| `krm-blueprint`    | [A kpt package, with 1 or more KRM files and a CHANGELOG.md](https://github.com/GoogleCloudPlatform/blueprints/tree/main/catalog/project)                                                          |
+| `maven`            | [Strategy for Maven projects, generates SNAPSHOT version after each release and updates `pom.xml` automatically](https://github.com/release-please-oss/release-please/blob/main/docs/java.md)              |
 | `node`             | [A Node.js repository, with a package.json and CHANGELOG.md](https://github.com/yargs/yargs)                                                                                                       |
 | `ocaml`            | [An OCaml repository, containing 1 or more opam or esy files and a CHANGELOG.md](https://github.com/grain-lang/binaryen.ml)                                                                        |
-| `python`           | [A Python repository, with a setup.py, setup.cfg, version.py and CHANGELOG.md](https://github.com/googleapis/python-storage) and optionally a pyproject.toml and a &lt;project&gt;/\_\_init\_\_.py |
+| `python`           | [A Python repository, with a setup.py, setup.cfg, version.py and CHANGELOG.md](https://github.com/release-please-oss/python-storage) and optionally a pyproject.toml and a &lt;project&gt;/\_\_init\_\_.py |
 | `php`              | [A php composer package with composer.json and CHANGELOG.md](https://github.com/setnemo/asterisk-notation)                                                                                         |
 | `ruby`             | [A Ruby repository, with version.rb and CHANGELOG.md](https://github.com/google/google-id-token)                                                                                                   |
 | `rust`             | A Rust repository, with a Cargo.toml (either as a crate or workspace) and a CHANGELOG.md                                                                                                           |
 | `sfdx`             | A repository with a [sfdx-project.json](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm) and a CHANGELOG.md                                        |
-| `simple`           | [A repository with a version.txt and a CHANGELOG.md](https://github.com/googleapis/gapic-generator)                                                                                                |
+| `simple`           | [A repository with a version.txt and a CHANGELOG.md](https://github.com/release-please-oss/gapic-generator)                                                                                                |
 | `terraform-module` | [A terraform module, with a version in the README.md, and a CHANGELOG.md](https://github.com/terraform-google-modules/terraform-google-project-factory)                                            |
 
-New types of releases can be [added here](https://github.com/googleapis/release-please/tree/main/src/strategies).
+New types of releases can be [added here](https://github.com/release-please-oss/release-please/tree/main/src/strategies).
 
-> You can also find them in the [release-please repository](https://github.com/googleapis/release-please/tree/main#strategy-language-types-supported).
+> You can also find them in
+> the [release-please repository](https://github.com/release-please-oss/release-please/tree/main#strategy-language-types-supported).
 
 ## Outputs
 
 > Properties that are available after the action executed.
 
 | output             | description                                                                                                                                                       |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|--------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `releases_created` | `true` if any release was created, `false` otherwise                                                                                                              |
-| `paths_released`   | A JSON string of the array of paths that had releases created (`[]` if nothing was released)                                                                                          |
+| `paths_released`   | A JSON string of the array of paths that had releases created (`[]` if nothing was released)                                                                      |
 | `prs_created`      | `true` if any pull request was created or updated                                                                                                                 |
-| `pr`               | A JSON string of the [PullRequest object](https://github.com/googleapis/release-please/blob/main/src/pull-request.ts#L15) (unset if no release created)           |
-| `prs`              | A JSON string of the array of [PullRequest objects](https://github.com/googleapis/release-please/blob/main/src/pull-request.ts#L15) (unset if no release created) |
+| `pr`               | A JSON string of the [PullRequest object](https://github.com/release-please-oss/release-please/blob/main/src/pull-request.ts#L15) (unset if no release created)           |
+| `prs`              | A JSON string of the array of [PullRequest objects](https://github.com/release-please-oss/release-please/blob/main/src/pull-request.ts#L15) (unset if no release created) |
 
 ### Root component outputs
 
 If you have a root component (path is `.` or unset), then the action will also output:
 
-| output               | description                                                                                                |
-| -------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `release_created`    | `true` if a root component release was created, `false` otherwise                                          |
-| `upload_url`         | Directly related to [**Create a release**](https://developer.github.com/v3/repos/releases/#response-4) API |
-| `html_url`           | Directly related to [**Create a release**](https://developer.github.com/v3/repos/releases/#response-4) API |
-| `tag_name`           | Directly related to [**Create a release**](https://developer.github.com/v3/repos/releases/#response-4) API |
-| `version`            | Number representing full semver value                                                                      |
-| `major`              | Number representing major semver value                                                                     |
-| `minor`              | Number representing minor semver value                                                                     |
-| `patch`              | Number representing patch semver value                                                                     |
-| `sha`                | SHA that a GitHub release was tagged at                                                                    |
+| output            | description                                                                                                |
+|-------------------|------------------------------------------------------------------------------------------------------------|
+| `release_created` | `true` if a root component release was created, `false` otherwise                                          |
+| `upload_url`      | Directly related to [**Create a release**](https://developer.github.com/v3/repos/releases/#response-4) API |
+| `html_url`        | Directly related to [**Create a release**](https://developer.github.com/v3/repos/releases/#response-4) API |
+| `tag_name`        | Directly related to [**Create a release**](https://developer.github.com/v3/repos/releases/#response-4) API |
+| `version`         | Number representing full semver value                                                                      |
+| `major`           | Number representing major semver value                                                                     |
+| `minor`           | Number representing minor semver value                                                                     |
+| `patch`           | Number representing patch semver value                                                                     |
+| `sha`             | SHA that a GitHub release was tagged at                                                                    |
 
 ### Path outputs
 
@@ -197,7 +208,7 @@ directory, then your outputs will have the `path` prefixed to the output name.
 This prefix allows you to distinguish values for different releases.
 
 | output                    | description                                                                                                |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------- |
+|---------------------------|------------------------------------------------------------------------------------------------------------|
 | `<path>--release_created` | `true` if the release was created, `false` otherwise                                                       |
 | `<path>--upload_url`      | Directly related to [**Create a release**](https://developer.github.com/v3/repos/releases/#response-4) API |
 | `<path>--html_url`        | Directly related to [**Create a release**](https://developer.github.com/v3/repos/releases/#response-4) API |
@@ -208,7 +219,8 @@ This prefix allows you to distinguish values for different releases.
 | `<path>--patch`           | Number representing patch semver value                                                                     |
 | `<path>--sha`             | sha that a GitHub release was tagged at                                                                    |
 
-If the path contains `/` you can access the outputs by using javascript like property access `steps.release.outputs[<path>--...]` 
+If the path contains `/` you can access the outputs by using javascript like property access
+`steps.release.outputs[<path>--...]`
 e.g.:
 
 ```yaml
@@ -247,7 +259,8 @@ The most important prefixes you should have in mind are:
 
 ### Supporting multiple release branches
 
-`release-please` has the ability to target not default branches. You can even use separate release strategies (`release-type`).
+`release-please` has the ability to target not default branches. You can even use separate release strategies (
+`release-type`).
 To configure, simply configure multiple workflows that specify a different `target-branch`:
 
 Configuration for `main` (default) branch (`.github/workflows/release-main.yaml`):
@@ -263,7 +276,7 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: googleapis/release-please-action@v4
+      - uses: release-please-oss/release-please-action@v4
         with:
           release-type: node
           # The short ref name of the branch or tag that triggered
@@ -286,7 +299,7 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: googleapis/release-please-action@v4
+      - uses: release-please-oss/release-please-action@v4
         id: release
         with:
           release-type: node
@@ -309,7 +322,8 @@ jobs:
 ```
 
 > So that you can keep 2FA enabled for npm publications, we recommend setting
-> `registry-url` to your own [Wombat Dressing Room](https://github.com/GoogleCloudPlatform/wombat-dressing-room) deployment.
+> `registry-url` to your own [Wombat Dressing Room](https://github.com/GoogleCloudPlatform/wombat-dressing-room)
+> deployment.
 
 ## Creating major/minor tags
 
@@ -333,7 +347,7 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: googleapis/release-please-action@v4
+      - uses: release-please-oss/release-please-action@v4
         id: release
         with:
           release-type: node
@@ -343,7 +357,7 @@ jobs:
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git remote add gh-token "https://${{ secrets.GITHUB_TOKEN }}@github.com/googleapis/release-please-action.git"
+          git remote add gh-token "https://${{ secrets.GITHUB_TOKEN }}@github.com/release-please-oss/release-please-action.git"
           git tag -d v${{ steps.release.outputs.major }} || true
           git tag -d v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
           git push origin :v${{ steps.release.outputs.major }} || true
@@ -356,7 +370,8 @@ jobs:
 
 ## Attaching files to the GitHub release
 
-You can attach additional files, such as release artifacts, to the GitHub release that is created. The `gh` CLI tool, which is installed on all runners, can be used for this.
+You can attach additional files, such as release artifacts, to the GitHub release that is created. The `gh` CLI tool,
+which is installed on all runners, can be used for this.
 
 This example uses the `gh` tool to attach the file `./artifact/some-build-artifact.zip`:
 
@@ -370,7 +385,7 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: googleapis/release-please-action@v4
+      - uses: release-please-oss/release-please-action@v4
         id: release
         with:
           release-type: node
@@ -388,8 +403,8 @@ jobs:
 If you were setting the `command` option, you will likely need to modify your configuration.
 
 | Command          | New Configuration                                                | Description                                                                                                                                  |
-| ---------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `github-release` | `skip-github-pull-request: true`                                 | This command was used for only tagging releases. Now we tell release-please to skip opening release PRs.                                      |
+|------------------|------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| `github-release` | `skip-github-pull-request: true`                                 | This command was used for only tagging releases. Now we tell release-please to skip opening release PRs.                                     |
 | `release-pr`     | `skip-github-release: true`                                      | This command was used for only opening release PRs. Now we tell release-please to skip tagging releases.                                     |
 | `manifest`       | do not set `release-type` option                                 | This command told release-please to use a manifest config file. This is now the default behavior unless you explicitly set a `release-type`. |
 | `manifest-pr`    | `skip-github-release: true` and do not set `release-type` option | This command told release-please to use a manifest config file and only open the pull reuqest.                                               |
@@ -401,7 +416,7 @@ will need to configure via the release-please manifest configuration instead. Be
 you can see a mapping of the old option to the new option:
 
 | Old Option                         | New Option                                                                            | Notes                                                                               |
-| ---------------------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+|------------------------------------|---------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
 | `path`                             | `$.packages`                                                                          | The root `packages` field is an object where the key is the `path` being configured |
 | `changelog-path`                   | `$.packages[path].changelog-path`                                                     | Package-only option                                                                 |
 | `component`                        | `$.packages[path].component`                                                          | Package-only option                                                                 |
