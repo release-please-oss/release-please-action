@@ -74,5 +74,4 @@ jobs:
           # TODO: use GitHub App instead
           token: ${{ secrets.PAT_GITHUB }}
           release-type: node
-          fork: true
           skip-github-release: true
