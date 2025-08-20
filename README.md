@@ -21,6 +21,7 @@ originally created by Google and licensed under Apache 2.0.
 
    permissions:
      contents: write
+     issues: write
      pull-requests: write
 
    name: release-please
@@ -124,6 +125,7 @@ This workflow will need the following permissions in your workflow file:
 ```yml
 permissions:
   contents: write
+  issues: write
   pull-requests: write
 ```
 
