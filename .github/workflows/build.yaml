@@ -1,0 +1,49 @@
+name: Build dist
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-dist:
+    name: 'Build dist'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v5.0.0
+      - name: Setup Node environment
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version-file: 'package.json'
+      - name: Cache NodeJS dependencies
+        uses: actions/cache@v4.2.4
+        id: nodejs-cache
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-${{ runner.arch }}-npm-${{ hashFiles('./package-lock.json') }}
+      - name: Install NodeJS dependencies
+        if: ${{ steps.nodejs-cache.outputs.cache-hit != 'true' }}
+        run: npm ci --no-audit
+      - name: Run tests
+        run: npm run build
+      - name: Generate GitHub token
+        uses: actions/create-github-app-token@v2.1.1
+        id: token
+        with:
+          app-id: ${{ secrets.RELEASE_PLEASE_OSS_BOT_APP_ID }}
+          private-key: ${{ secrets.RELEASE_PLEASE_OSS_BOT_PRIVATE_KEY }}
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7.0.8
+        with:
+          token: ${{ steps.token.outputs.token }}
+          title: 'chore: automated dist build'
+          commit-message: 'chore: automated dist build'
+          sign-commits: true
+          signoff: true
+          base: main
+          branch: chore-build-dist
+          body: |
+            Automated dist update by https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          labels: |
+            automated
