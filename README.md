@@ -6,7 +6,7 @@ Automate releases with Conventional Commit Messages.
 
 ## Attribution
 
-This project is a fork of [release-please-oss/release-please-action](https://github.com/release-please-oss/release-please-action),
+This project is a fork of [googleapis/release-please-action](https://github.com/googleapis/release-please-action),
 originally created by Google and licensed under Apache 2.0.
 
 ## Basic Configuration
