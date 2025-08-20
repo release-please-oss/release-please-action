@@ -1,0 +1,30 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "dependencyDashboardApproval": true,
+  "addLabels": [
+    "dependencies"
+  ],
+  "minimumReleaseAge": 14,
+  "rebaseWhen": "conflicted",
+  "packageRules": [
+    {
+      "groupName": "github-actions",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "addLabels": [
+        "github-actions",
+        "no-release"
+      ]
+    },
+    {
+      "groupName": "npm dependencies",
+      "matchManagers": [
+        "npm"
+      ],
+      "addLabels": [
+        "npm"
+      ]
+    }
+  ]
+}
