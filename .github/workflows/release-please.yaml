@@ -71,7 +71,8 @@ jobs:
       - id: release-pr
         uses: release-please-oss/release-please-action@main
         with:
-          token: ${{ secrets.YOSHI_CODE_BOT_TOKEN }}
+          # TODO: use GitHub App instead
+          token: ${{ secrets.PAT_GITHUB }}
           release-type: node
           fork: true
           skip-github-release: true
