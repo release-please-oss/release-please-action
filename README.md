@@ -30,7 +30,7 @@ originally created by Google and licensed under Apache 2.0.
      release-please:
        runs-on: ubuntu-latest
        steps:
-         - uses: release-please-oss/release-please-action@v4
+         - uses: release-please-oss/release-please-action@v5
            with:
              # this assumes that you have created a personal access token
              # (PAT) and configured it as a GitHub action secret named
@@ -59,7 +59,7 @@ and then configure this action as follows:
 ```yaml
 #...(same as above)
 steps:
-  - uses: release-please-oss/release-please-action@v4
+  - uses: release-please-oss/release-please-action@v5
     with:
       # this assumes that you have created a personal access token
       # (PAT) and configured it as a GitHub action secret named
@@ -69,6 +69,55 @@ steps:
       config-file: release-please-config.json
       # optional. customize path to .release-please-manifest.json
       manifest-file: .release-please-manifest.json
+```
+
+## Inline Configuration with JSON
+
+As an alternative to using separate config files, you can provide release-please configuration options inline using the
+`config-overrides-json` input parameter. This is useful for simple configurations or when you prefer to keep everything
+in your workflow file.
+
+```yaml
+steps:
+  - uses: release-please-oss/release-please-action@v5
+    with:
+      token: ${{ secrets.MY_RELEASE_PLEASE_TOKEN }}
+      release-type: simple
+      config-overrides-json: |
+        {
+          "bump-minor-pre-major": true,
+          "changelog-sections": [
+            {"type": "feat", "section": "Features"},
+            {"type": "fix", "section": "Bug Fixes"}
+          ],
+          "extra-files": ["VERSION.txt"]
+        }
+```
+
+The `config-overrides-json` parameter accepts a JSON string containing any valid release-please configuration options.
+When used with `release-type`, the inline configuration is merged with the release type defaults, with direct action
+inputs taking precedence over the JSON configuration.
+
+**Configuration Precedence (highest to lowest):**
+
+1. Direct action inputs (e.g., `release-type`, `include-component-in-tag`)
+2. `config-overrides-json` values
+3. Release type defaults
+
+**Example with precedence:**
+
+```yaml
+steps:
+  - uses: release-please-oss/release-please-action@v5
+    with:
+      token: ${{ secrets.MY_RELEASE_PLEASE_TOKEN }}
+      release-type: simple
+      include-component-in-tag: true  # This overrides JSON config
+      config-overrides-json: |
+        {
+          "include-component-in-tag": false,  # Ignored due to direct input
+          "bump-minor-pre-major": true        # Applied
+        }
 ```
 
 ## Action Inputs
@@ -90,6 +139,7 @@ steps:
 | `skip-github-release`      | If `true`, do not attempt to create releases. This is useful if splitting release tagging from PR creation.                            |
 | `skip-github-pull-request` | If `true`, do not attempt to create release pull requests. This is useful if splitting release tagging from PR creation.               |
 | `skip-labeling`            | If `true`, do not attempt to label the PR.                                                                                             |
+| `config-overrides-json`    | JSON string of release-please configuration options. Allows inline configuration without a separate config file.                       |
 
 ## GitHub Credentials
 
@@ -282,7 +332,7 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: release-please-oss/release-please-action@v4
+      - uses: release-please-oss/release-please-action@v5
         with:
           release-type: node
           # The short ref name of the branch or tag that triggered
@@ -305,7 +355,7 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: release-please-oss/release-please-action@v4
+      - uses: release-please-oss/release-please-action@v5
         id: release
         with:
           release-type: node
@@ -353,7 +403,7 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: release-please-oss/release-please-action@v4
+      - uses: release-please-oss/release-please-action@v5
         id: release
         with:
           release-type: node
@@ -391,7 +441,7 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: release-please-oss/release-please-action@v4
+      - uses: release-please-oss/release-please-action@v5
         id: release
         with:
           release-type: node

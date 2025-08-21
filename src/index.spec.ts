@@ -205,6 +205,99 @@ describe('release-please-action', () => {
       });
     });
 
+    describe('config-overrides-json', () => {
+      let fromConfigStub: jest.SpyInstance;
+      beforeEach(() => {
+        const fakeManifest = {
+          createReleases: jest.fn(),
+          createPullRequests: jest.fn()
+        } as any;
+        fakeManifest.createReleases.mockResolvedValue([]);
+        fakeManifest.createPullRequests.mockResolvedValue([]);
+        fromConfigStub = jest.spyOn(Manifest, 'fromConfig')
+          .mockResolvedValue(fakeManifest);
+      });
+
+      it('parses valid JSON config overrides', async () => {
+        mockInputs({
+          'release-type': 'simple',
+          'config-overrides-json': '{"release-type": "node", "bump-minor-pre-major": true}'
+        });
+        await action.main();
+        const calls = fromConfigStub.mock.calls;
+        expect(calls[0][2]).toEqual(expect.objectContaining({
+          releaseType: 'simple',
+          bumpMinorPreMajor: true,
+        }));
+      });
+
+      it('handles empty config overrides', async () => {
+        mockInputs({
+          'release-type': 'simple',
+          'config-overrides-json': '{}'
+        });
+        await action.main();
+        const calls = fromConfigStub.mock.calls;
+        expect(calls[0][2]).toEqual(expect.objectContaining({
+          releaseType: 'simple',
+        }));
+      });
+
+      it('defaults to empty object when config-overrides-json not provided', async () => {
+        mockInputs({
+          'release-type': 'simple'
+        });
+        await action.main();
+        const calls = fromConfigStub.mock.calls;
+        expect(calls[0][2]).toEqual(expect.objectContaining({
+          releaseType: 'simple',
+        }));
+      });
+
+      it('throws error for invalid JSON', async () => {
+        mockInputs({
+          'release-type': 'simple',
+          'config-overrides-json': '{invalid json'
+        });
+        await expect(action.main()).rejects.toThrow('Could not parse config override:');
+      });
+
+      it('input parameters override config overrides', async () => {
+        mockInputs({
+          'release-type': 'simple',
+          'include-component-in-tag': 'true',
+          'config-overrides-json': '{"release-type": "node", "include-component-in-tag": false}'
+        });
+        await action.main();
+        const calls = fromConfigStub.mock.calls;
+        expect(calls[0][2]).toEqual(expect.objectContaining({
+          releaseType: 'simple',
+          includeComponentInTag: true,
+        }));
+      });
+
+      it('extracts complex config overrides correctly', async () => {
+        mockInputs({
+          'release-type': 'simple',
+          'config-overrides-json': JSON.stringify({
+            'changelog-sections': [{ type: 'feat', section: 'Features' }],
+            'extra-files': ['VERSION.txt'],
+            'skip-github-release': true,
+            'label': 'release: pending,autorelease: tagged'
+          })
+        });
+        await action.main();
+        const calls = fromConfigStub.mock.calls;
+        expect(calls[0][2]).toEqual(expect.objectContaining({
+          releaseType: 'simple',
+          changelogSections: [{ type: 'feat', section: 'Features' }],
+          extraFiles: ['VERSION.txt'],
+          skipGithubRelease: true,
+          labels: ['release: pending', 'autorelease: tagged'],
+        }));
+      });
+    });
+
     it('allows specifying manifest config paths', async () => {
       mockInputs({
         'config-file': 'path/to/config.json',

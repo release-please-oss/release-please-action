@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import * as core from '@actions/core';
-import {GitHub, Manifest, CreatedRelease, PullRequest, VERSION} from 'release-please';
+import { CreatedRelease, GitHub, Manifest, PullRequest, VERSION, ReleaserConfig } from 'release-please';
 
 const DEFAULT_CONFIG_FILE = 'release-please-config.json';
 const DEFAULT_MANIFEST_FILE = '.release-please-manifest.json';
@@ -43,11 +43,20 @@ interface ActionInputs {
   fork?: boolean;
   includeComponentInTag?: boolean;
   changelogHost: string;
+  configOverrides: object;
 }
 
 function parseInputs(): ActionInputs {
-  const inputs: ActionInputs = {
-    token: core.getInput('token', {required: true}),
+  const configOverrideJson =  getOptionalInput('config-overrides-json') || '{}';
+  let configOverrides;
+  try {
+    configOverrides = JSON.parse(configOverrideJson);
+  } catch (error) {
+    throw new Error(`Could not parse config override: ${error}`);
+  }
+
+  return {
+    token: core.getInput('token', { required: true }),
     releaseType: getOptionalInput('release-type'),
     path: getOptionalInput('path'),
     repoUrl: core.getInput('repo-url') || process.env.GITHUB_REPOSITORY || '',
@@ -65,8 +74,8 @@ function parseInputs(): ActionInputs {
     fork: getOptionalBooleanInput('fork'),
     includeComponentInTag: getOptionalBooleanInput('include-component-in-tag'),
     changelogHost: core.getInput('changelog-host') || DEFAULT_GITHUB_SERVER_URL,
+    configOverrides
   };
-  return inputs;
 }
 
 function getOptionalInput(name: string): string | undefined {
@@ -81,33 +90,77 @@ function getOptionalBooleanInput(name: string): boolean | undefined {
   return core.getBooleanInput(name);
 }
 
+// copied over from https://github.com/googleapis/release-please/blob/5d62849f23940e3dc1dd08beb2732792c2f6ea0e/src/manifest.ts#L1372
+function extractReleaserConfig(config: Record<string, any>): Partial<ReleaserConfig> {
+  return {
+    releaseType: config['release-type'],
+    bumpMinorPreMajor: config['bump-minor-pre-major'],
+    bumpPatchForMinorPreMajor: config['bump-patch-for-minor-pre-major'],
+    prereleaseType: config['prerelease-type'],
+    versioning: config['versioning'],
+    changelogSections: config['changelog-sections'],
+    changelogPath: config['changelog-path'],
+    changelogHost: config['changelog-host'],
+    releaseAs: config['release-as'],
+    skipGithubRelease: config['skip-github-release'],
+    skipChangelog: config['skip-changelog'],
+    draft: config.draft,
+    prerelease: config.prerelease,
+    draftPullRequest: config['draft-pull-request'],
+    component: config['component'],
+    packageName: config['package-name'],
+    versionFile: config['version-file'],
+    extraFiles: config['extra-files'],
+    includeComponentInTag: config['include-component-in-tag'],
+    includeVInTag: config['include-v-in-tag'],
+    changelogType: config['changelog-type'],
+    pullRequestTitlePattern: config['pull-request-title-pattern'],
+    pullRequestHeader: config['pull-request-header'],
+    pullRequestFooter: config['pull-request-footer'],
+    componentNoSpace: config['component-no-space'],
+    tagSeparator: config['tag-separator'],
+    separatePullRequests: config['separate-pull-requests'],
+    labels: config['label']?.split(','),
+    releaseLabels: config['release-label']?.split(','),
+    extraLabels: config['extra-label']?.split(','),
+    skipSnapshot: config['skip-snapshot'],
+    initialVersion: config['initial-version'],
+    excludePaths: config['exclude-paths'],
+    dateFormat: config['date-format'],
+  };
+}
+
 function loadOrBuildManifest(
   github: GitHub,
   inputs: ActionInputs
 ): Promise<Manifest> {
-  if (inputs.releaseType) {
-    core.debug('Building manifest from config');
-    return Manifest.fromConfig(
-      github,
-      github.repository.defaultBranch,
-      {
-        releaseType: inputs.releaseType,
-        includeComponentInTag: inputs.includeComponentInTag,
-        changelogHost: inputs.changelogHost,
-      },
-      {
-        fork: inputs.fork,
-        skipLabeling: inputs.skipLabeling,
-      },
-      inputs.path
-    );
-  }
   const manifestOverrides = inputs.fork || inputs.skipLabeling
     ? {
         fork: inputs.fork,
         skipLabeling: inputs.skipLabeling,
       }
     : {};
+
+  const releaserConfig = Object.fromEntries(
+    Object.entries(extractReleaserConfig(inputs.configOverrides)).filter(([key, value]) => value !== undefined),
+  );
+
+  if (inputs.releaseType) {
+    core.debug('Building manifest from config');
+    return Manifest.fromConfig(
+      github,
+      github.repository.defaultBranch,
+      {
+        ...releaserConfig,
+        releaseType: inputs.releaseType,
+        includeComponentInTag: inputs.includeComponentInTag,
+        changelogHost: inputs.changelogHost,
+      },
+      manifestOverrides,
+      inputs.path
+    );
+  }
+
   core.debug('Loading manifest from config file');
   return Manifest.fromManifest(
     github,

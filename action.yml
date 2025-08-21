@@ -70,6 +70,10 @@ inputs:
     description: 'The proto://host where commits live. Default `https://github.com`'
     required: false
     default: ${{ github.server_url }}
+  config-overrides-json:
+    description: 'Release Please configuration file as JSON string. Can be used to specify properties not exposed by this action.'
+    required: false
+    default: '{}'
 runs:
   using: 'node20'
   main: 'dist/index.js'

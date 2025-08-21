@@ -23,6 +23,42 @@ jobs:
         with:
           token: ${{ steps.token.outputs.token }}
           release-type: node
+          # language=json
+          config-overrides-json: |
+            {
+              "changelog-sections": [
+                {
+                  "type": "feat",
+                  "hidden": false,
+                  "section": "Features"
+                },
+                {
+                  "type": "feature",
+                  "hidden": false,
+                  "section": "Features"
+                },
+                {
+                  "type": "fix",
+                  "hidden": false,
+                  "section": "Bug Fixes"
+                },
+                {
+                  "type": "chore",
+                  "hidden": false,
+                  "section": "Miscellaneous Chores"
+                },
+                {
+                  "type": "docs",
+                  "hidden": false,
+                  "section": "Documentation"
+                },
+                {
+                  "type": "refactor",
+                  "hidden": false,
+                  "section": "Code Refactoring"
+                }
+              ]
+            }
       - name: Checkout sources
         uses: actions/checkout@v5.0.0
         with:
