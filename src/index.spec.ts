@@ -31,37 +31,21 @@ const fixturePrs = [
 process.env.GITHUB_REPOSITORY = 'fakeOwner/fakeRepo';
 
 function mockInputs(inputs: Record<string, string>): void {
-  const envVars: Record<string, string> = {};
-  for (const [name, val] of Object.entries({...DEFAULT_INPUTS, ...inputs})) {
-    envVars[`INPUT_${name.replace(/ /g, '_').toUpperCase()}`] = val;
-  }
-  
-  // Store original values before setting new ones
-  Object.keys(envVars).forEach(key => {
-    originalEnv[key] = process.env[key];
-    process.env[key] = envVars[key];
+  const allInputs = {...DEFAULT_INPUTS, ...inputs};
+  jest.spyOn(core, 'getInput').mockImplementation((name: string) => {
+    return allInputs[name] || '';
+  });
+  jest.spyOn(core, 'getBooleanInput').mockImplementation((name: string) => {
+    const value = allInputs[name] || '';
+    return value.toLowerCase() === 'true';
   });
 }
 
 nock.disableNetConnect();
 
-// Global variable to track original environment values
-let originalEnv: Record<string, string | undefined> = {};
-
 describe('release-please-action', () => {
   let output: Record<string, string | boolean> = {};
-  afterEach(() => {
-    jest.restoreAllMocks();
-    // Restore original environment variables
-    Object.keys(originalEnv).forEach(key => {
-      if (originalEnv[key] === undefined) {
-        delete process.env[key];
-      } else {
-        process.env[key] = originalEnv[key];
-      }
-    });
-    originalEnv = {};
-  });
+
   beforeEach(() => {
     output = {};
     jest.spyOn(core, 'setOutput').mockImplementation(
@@ -74,9 +58,11 @@ describe('release-please-action', () => {
       default_branch: 'main',
     });
   });
+
   afterEach(() => {
     jest.restoreAllMocks();
   });
+
   describe('configuration', () => {
     let fakeManifest: any;
     describe('with release-type', () => {
@@ -89,6 +75,7 @@ describe('release-please-action', () => {
         fromConfigStub = jest.spyOn(Manifest, 'fromConfig')
           .mockResolvedValue(fakeManifest);
       });
+
       it('builds a manifest from config', async () => {
         mockInputs({
           'release-type': 'simple',
@@ -99,6 +86,7 @@ describe('release-please-action', () => {
         expect(fakeManifest.createReleases).toHaveBeenCalledTimes(1);
         expect(fakeManifest.createPullRequests).toHaveBeenCalledTimes(1);
       });
+
       it('skips creating releases if skip-github-release specified', async () => {
         mockInputs({
           'skip-github-release': 'true',
@@ -109,6 +97,7 @@ describe('release-please-action', () => {
         expect(fakeManifest.createReleases).not.toHaveBeenCalled();
         expect(fakeManifest.createPullRequests).toHaveBeenCalledTimes(1);
       });
+
       it('skips creating pull requests if skip-github-pull-request specified', async () => {
         mockInputs({
           'skip-github-pull-request': 'true',
@@ -119,6 +108,7 @@ describe('release-please-action', () => {
         expect(fakeManifest.createReleases).toHaveBeenCalledTimes(1);
         expect(fakeManifest.createPullRequests).not.toHaveBeenCalled();
       });
+
       it('allows specifying custom target branch', async () => {
         mockInputs({
           'target-branch': 'dev',
@@ -132,6 +122,7 @@ describe('release-please-action', () => {
 
         expect(fromConfigStub).toHaveBeenCalled();
       });
+
       it('allows specifying fork', async () => {
         mockInputs({
           'fork': 'true',
@@ -157,6 +148,7 @@ describe('release-please-action', () => {
         fromManifestStub = jest.spyOn(Manifest, 'fromManifest')
           .mockResolvedValue(fakeManifest);
       });
+
       it('loads a manifest from the repository', async () => {
         mockInputs({});
         fakeManifest.createReleases.mockResolvedValue([]);
@@ -165,6 +157,7 @@ describe('release-please-action', () => {
         expect(fakeManifest.createReleases).toHaveBeenCalledTimes(1);
         expect(fakeManifest.createPullRequests).toHaveBeenCalledTimes(1);
       });
+
       it('skips creating releases if skip-github-release specified', async () => {
         mockInputs({
           'skip-github-release': 'true',
@@ -174,6 +167,7 @@ describe('release-please-action', () => {
         expect(fakeManifest.createReleases).not.toHaveBeenCalled();
         expect(fakeManifest.createPullRequests).toHaveBeenCalledTimes(1);
       });
+
       it('skips creating pull requests if skip-github-pull-request specified', async () => {
         mockInputs({
           'skip-github-pull-request': 'true',
@@ -183,6 +177,7 @@ describe('release-please-action', () => {
         expect(fakeManifest.createReleases).toHaveBeenCalledTimes(1);
         expect(fakeManifest.createPullRequests).not.toHaveBeenCalled();
       });
+
       it('allows specifying custom target branch', async () => {
         mockInputs({
           'target-branch': 'dev',
@@ -195,6 +190,7 @@ describe('release-please-action', () => {
 
         expect(fromManifestStub).toHaveBeenCalled();
       });
+
       it('allows specifying fork', async () => {
         mockInputs({
           'fork': 'true',
@@ -325,6 +321,7 @@ describe('release-please-action', () => {
       expect(pr).toEqual(fixturePrs[0]);
       expect(prs).toEqual(JSON.stringify([fixturePrs[0]]));
     });
+
     it('sets appropriate output if multiple releases are created', async () => {
       mockInputs({});
       const fakeManifest = {
@@ -397,6 +394,7 @@ describe('release-please-action', () => {
       expect(output.paths_released).toBe('["a","b"]');
       expect(output.releases_created).toBe(true);
     });
+
     it('sets appropriate output if multiple release PR opened', async () => {
       mockInputs({});
       const fakeManifest = {
@@ -414,6 +412,7 @@ describe('release-please-action', () => {
       expect(pr).toEqual(fixturePrs[0]);
       expect(prs).toEqual(JSON.stringify(fixturePrs));
     });
+
     it('does not set outputs when no release created or PR returned', async () => {
       mockInputs({});
       const fakeManifest = {
