@@ -1,17 +1,20 @@
 {
-  "extends": "./node_modules/gts/tsconfig-google.json",
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "rootDir": ".",
     "outDir": "build",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "types": [
+      "mocha",
+      "node"
+    ]
   },
   "include": [
     "src/*.ts",
     "src/**/*.ts",
     "test/*.ts",
-    "test/**/*.ts",
-    "system-test/*.ts"
+    "test/**/*.ts"
   ],
   "exclude": [
     "src/*.spec.ts",

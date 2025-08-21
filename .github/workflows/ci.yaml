@@ -31,8 +31,10 @@ jobs:
       - name: Install NodeJS dependencies
         if: ${{ steps.nodejs-cache.outputs.cache-hit != 'true' }}
         run: npm ci --no-audit
-      - name: Run tests
+      - name: Run tests (Mocha)
         run: npm run test
+      - name: Run tests (Jest)
+        run: npm run test:jest
 
   build:
     name: 'Build'
