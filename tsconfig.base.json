@@ -4,7 +4,8 @@
     "allowSyntheticDefaultImports": true,
     "rootDir": ".",
     "outDir": "build",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "types": ["mocha", "node"]
   },
   "include": [
     "src/*.ts",
@@ -14,7 +15,7 @@
     "system-test/*.ts"
   ],
   "exclude": [
-    "src/*.spec.ts",
-    "src/**/*.spec.ts"
+    "test/*.jest.ts",
+    "test/**/*.jest.ts"
   ]
 }
