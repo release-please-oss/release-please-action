@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.2.0](https://github.com/release-please-oss/release-please-action/compare/v5.1.0...v5.2.0) (2025-08-21)
+
+
+### Features
+
+* allow to override releaser config ([#14](https://github.com/release-please-oss/release-please-action/issues/14)) ([c3529ca](https://github.com/release-please-oss/release-please-action/commit/c3529ca697414f51e1b52668d436d0731ffbafea))
+
+
+### Documentation
+
+* adds missing github action permissions to README ([#12](https://github.com/release-please-oss/release-please-action/issues/12)) ([2aa8fc1](https://github.com/release-please-oss/release-please-action/commit/2aa8fc17ad385f374eee2783159fba56c8309f8f))
+
 ## [5.1.0](https://github.com/release-please-oss/release-please-action/compare/v5.0.0...v5.1.0) (2025-08-20)
 
 
