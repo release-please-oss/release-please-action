@@ -1,7 +1,7 @@
 # Release Please Action
 
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
-[![codecov](https://codecov.io/gh/yafanasiev/release-please-action/graph/badge.svg?token=POT826AZ6J)](https://codecov.io/gh/yafanasiev/release-please-action)
+[![codecov](https://codecov.io/github/release-please-oss/release-please-action/graph/badge.svg?token=VU1EVUQRAW)](https://codecov.io/github/release-please-oss/release-please-action)
 
 Automate releases with Conventional Commit Messages.
 
