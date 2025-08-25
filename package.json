@@ -7,9 +7,9 @@
   "scripts": {
     "test": "jest --ci --passWithNoTests=false --coverage",
     "prepare": "npm run compile",
-    "lint": "gts check",
+    "lint": "biome check .",
+    "fix": "biome check --write .",
     "compile": "tsc -p ./tsconfig.app.json",
-    "fix": "gts fix",
     "build": "ncc build src/index.ts",
     "pretest": "npm run compile"
   },
@@ -32,6 +32,7 @@
     "release-please": "^17.1.2"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.2.2",
     "@types/jest": "^30.0.0",
     "@types/node": "^20.8.10",
     "@vercel/ncc": "^0.38.0",
@@ -39,7 +40,6 @@
     "jest": "^30.0.5",
     "jest-junit": "^16.0.0",
     "nock": "^14.0.10",
-    "standard": "^16.0.4",
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
     "typescript": "^4.6.4"
