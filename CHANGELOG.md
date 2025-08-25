@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.3.0](https://github.com/release-please-oss/release-please-action/compare/v5.2.0...v5.3.0) (2025-08-25)
+
+
+### Features
+
+* add bootstrap-sha to inputs ([#19](https://github.com/release-please-oss/release-please-action/issues/19)) ([5ea7827](https://github.com/release-please-oss/release-please-action/commit/5ea78273fae1c79597bd3fadf6eeb90271122bf3))
+
 ## [5.2.0](https://github.com/release-please-oss/release-please-action/compare/v5.1.0...v5.2.0) (2025-08-21)
 
 
