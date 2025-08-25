@@ -1,7 +1,7 @@
-import * as action from '../src/index';
 import * as core from '@actions/core';
 import * as nock from 'nock';
-import { Manifest, GitHub } from 'release-please';
+import { GitHub, Manifest } from 'release-please';
+import * as action from '../src/index';
 
 const DEFAULT_INPUTS: Record<string, string> = {
   token: 'fake-token',
@@ -594,6 +594,7 @@ describe('release-please-action', () => {
       expect(fakeManifest.createReleases).toHaveBeenCalledTimes(1);
       expect(fakeManifest.createPullRequests).toHaveBeenCalledTimes(1);
 
+      // biome-ignore lint/suspicious/noPrototypeBuiltins: TODO: fix later
       expect(Object.hasOwnProperty.call(output, 'pr')).toBe(false);
       expect(output.paths_released).toBe('[]');
       expect(output.prs_created).toBe(false);
