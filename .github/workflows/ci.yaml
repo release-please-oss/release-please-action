@@ -15,6 +15,9 @@ jobs:
   test:
     name: 'Test'
     runs-on: ubuntu-24.04
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Checkout sources
         uses: actions/checkout@v5.0.0
@@ -35,11 +38,17 @@ jobs:
         run: npm ci --no-audit
       - name: Run tests
         run: npm run test
-      - name: Codecov
+      - name: Upload test coverage to Codecov
         uses: codecov/codecov-action@v5.5.0
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          use_oidc: true
           directory: 'coverage'
+          fail_ci_if_error: true
+      - name: Upload test results to Codecov
+        uses: codecov/test-results-action@v1
+        with:
+          use_oidc: true
+          directory: 'build/junit'
           fail_ci_if_error: true
 
   build:
