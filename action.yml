@@ -66,6 +66,10 @@ inputs:
     description: 'if set to true, then do not try to label the PR'
     required: false
     default: false
+  bootstrap-sha:
+    description: 'How far back (exclusive) to pull commits for conventional commit parsing.'
+    required: false
+    default: ''
   changelog-host:
     description: 'The proto://host where commits live. Default `https://github.com`'
     required: false

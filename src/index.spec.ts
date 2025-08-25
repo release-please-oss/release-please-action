@@ -136,6 +136,20 @@ describe('release-please-action', () => {
 
         expect(fromConfigStub).toHaveBeenCalled();
       });
+
+      it('allows specifying bootstrap-sha', async () => {
+        mockInputs({
+          'bootstrap-sha': 'abc123def',
+          'release-type': 'simple',
+        });
+        fakeManifest.createReleases.mockResolvedValue([]);
+        fakeManifest.createPullRequests.mockResolvedValue([]);
+        await action.main();
+        expect(fakeManifest.createReleases).toHaveBeenCalledTimes(1);
+        expect(fakeManifest.createPullRequests).toHaveBeenCalledTimes(1);
+
+        expect(fromConfigStub).toHaveBeenCalled();
+      });
     });
 
     describe('with manifest', () => {
@@ -202,6 +216,63 @@ describe('release-please-action', () => {
         expect(fakeManifest.createPullRequests).toHaveBeenCalledTimes(1);
 
         expect(fromManifestStub).toHaveBeenCalled();
+      });
+
+      it('allows specifying bootstrap-sha', async () => {
+        mockInputs({
+          'bootstrap-sha': 'abc123def',
+        });
+        fakeManifest.createReleases.mockResolvedValue([]);
+        fakeManifest.createPullRequests.mockResolvedValue([]);
+        await action.main();
+        expect(fakeManifest.createReleases).toHaveBeenCalledTimes(1);
+        expect(fakeManifest.createPullRequests).toHaveBeenCalledTimes(1);
+
+        expect(fromManifestStub).toHaveBeenCalled();
+      });
+
+      it('correctly filters undefined values in manifest overrides', async () => {
+        mockInputs({
+          'skip-labeling': 'true',
+        });
+        fakeManifest.createReleases.mockResolvedValue([]);
+        fakeManifest.createPullRequests.mockResolvedValue([]);
+        await action.main();
+        expect(fakeManifest.createReleases).toHaveBeenCalledTimes(1);
+        expect(fakeManifest.createPullRequests).toHaveBeenCalledTimes(1);
+
+        expect(fromManifestStub).toHaveBeenCalledWith(
+          expect.any(Object),
+          expect.any(String),
+          expect.any(String),
+          expect.any(String),
+          expect.objectContaining({
+            skipLabeling: true,
+          })
+        );
+      });
+
+      it('includes bootstrap-sha in manifest overrides when provided', async () => {
+        mockInputs({
+          'bootstrap-sha': 'abc123def',
+          'fork': 'true',
+        });
+        fakeManifest.createReleases.mockResolvedValue([]);
+        fakeManifest.createPullRequests.mockResolvedValue([]);
+        await action.main();
+        expect(fakeManifest.createReleases).toHaveBeenCalledTimes(1);
+        expect(fakeManifest.createPullRequests).toHaveBeenCalledTimes(1);
+
+        expect(fromManifestStub).toHaveBeenCalledWith(
+          expect.any(Object),
+          expect.any(String),
+          expect.any(String),
+          expect.any(String),
+          expect.objectContaining({
+            fork: true,
+            bootstrapSha: 'abc123def',
+          })
+        );
       });
     });
 

@@ -40,6 +40,7 @@ interface ActionInputs {
   skipGitHubRelease?: boolean;
   skipGitHubPullRequest?: boolean;
   skipLabeling?: boolean;
+  bootstrapSha?: string;
   fork?: boolean;
   includeComponentInTag?: boolean;
   changelogHost: string;
@@ -71,6 +72,7 @@ function parseInputs(): ActionInputs {
     skipGitHubRelease: getOptionalBooleanInput('skip-github-release'),
     skipGitHubPullRequest: getOptionalBooleanInput('skip-github-pull-request'),
     skipLabeling: getOptionalBooleanInput('skip-labeling'),
+    bootstrapSha: getOptionalInput('bootstrap-sha'),
     fork: getOptionalBooleanInput('fork'),
     includeComponentInTag: getOptionalBooleanInput('include-component-in-tag'),
     changelogHost: core.getInput('changelog-host') || DEFAULT_GITHUB_SERVER_URL,
@@ -134,12 +136,13 @@ function loadOrBuildManifest(
   github: GitHub,
   inputs: ActionInputs
 ): Promise<Manifest> {
-  const manifestOverrides = inputs.fork || inputs.skipLabeling
-    ? {
-        fork: inputs.fork,
-        skipLabeling: inputs.skipLabeling,
-      }
-    : {};
+  const manifestOverrides = Object.fromEntries(
+    Object.entries({
+      fork: inputs.fork,
+      skipLabeling: inputs.skipLabeling,
+      bootstrapSha: inputs.bootstrapSha,
+    }).filter(([key, value]) => value !== undefined),
+  );
 
   const releaserConfig = Object.fromEntries(
     Object.entries(extractReleaserConfig(inputs.configOverrides)).filter(([key, value]) => value !== undefined),

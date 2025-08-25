@@ -140,6 +140,7 @@ steps:
 | `skip-github-release`      | If `true`, do not attempt to create releases. This is useful if splitting release tagging from PR creation.                            |
 | `skip-github-pull-request` | If `true`, do not attempt to create release pull requests. This is useful if splitting release tagging from PR creation.               |
 | `skip-labeling`            | If `true`, do not attempt to label the PR.                                                                                             |
+| `bootstrap-sha`            | How far back (exclusive) to pull commits for conventional commit parsing.                                                               |
 | `config-overrides-json`    | JSON string of release-please configuration options. Allows inline configuration without a separate config file.                       |
 
 ## GitHub Credentials
