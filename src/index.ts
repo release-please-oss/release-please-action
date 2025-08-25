@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import * as core from '@actions/core';
-import { type CreatedRelease, GitHub, Manifest, type PullRequest, VERSION, type ReleaserConfig } from 'release-please';
+import { type CreatedRelease, GitHub, Manifest, type PullRequest, type ReleaserConfig, VERSION } from 'release-please';
 
 const DEFAULT_CONFIG_FILE = 'release-please-config.json';
 const DEFAULT_MANIFEST_FILE = '.release-please-manifest.json';
@@ -192,7 +192,7 @@ export async function main() {
 
 function getGitHubInstance(inputs: ActionInputs): Promise<GitHub> {
   const [owner, repo] = inputs.repoUrl.split('/');
-  let proxy: Proxy | undefined ;
+  let proxy: Proxy | undefined;
   if (inputs.proxyServer) {
     const [host, port] = inputs.proxyServer.split(':');
     proxy = {
