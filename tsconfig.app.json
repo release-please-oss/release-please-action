@@ -5,18 +5,8 @@
     "rootDir": ".",
     "outDir": "build",
     "resolveJsonModule": true,
-    "types": [
-      "node"
-    ]
+    "types": ["node"]
   },
-  "include": [
-    "src/*.ts",
-    "src/**/*.ts",
-    "test/*.ts",
-    "test/**/*.ts"
-  ],
-  "exclude": [
-    "src/*.spec.ts",
-    "src/**/*.spec.ts"
-  ]
+  "include": ["src/*.ts", "src/**/*.ts", "test/*.ts", "test/**/*.ts"],
+  "exclude": ["src/*.spec.ts", "src/**/*.spec.ts"]
 }

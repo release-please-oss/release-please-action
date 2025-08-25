@@ -5,19 +5,8 @@
     "rootDir": ".",
     "outDir": "build",
     "resolveJsonModule": true,
-    "types": [
-      "node"
-    ]
+    "types": ["node"]
   },
-  "include": [
-    "src/*.ts",
-    "src/**/*.ts",
-    "test/*.ts",
-    "test/**/*.ts",
-    "system-test/*.ts"
-  ],
-  "exclude": [
-    "test/*.jest.ts",
-    "test/**/*.jest.ts"
-  ]
+  "include": ["src/*.ts", "src/**/*.ts", "test/*.ts", "test/**/*.ts", "system-test/*.ts"],
+  "exclude": ["test/*.jest.ts", "test/**/*.jest.ts"]
 }
