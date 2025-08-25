@@ -48,7 +48,7 @@ interface ActionInputs {
 }
 
 function parseInputs(): ActionInputs {
-  const configOverrideJson =  getOptionalInput('config-overrides-json') || '{}';
+  const configOverrideJson = getOptionalInput('config-overrides-json') || '{}';
   let configOverrides;
   try {
     configOverrides = JSON.parse(configOverrideJson);
@@ -66,8 +66,7 @@ function parseInputs(): ActionInputs {
     manifestFile: core.getInput('manifest-file') || DEFAULT_MANIFEST_FILE,
     githubApiUrl: core.getInput('github-api-url') || DEFAULT_GITHUB_API_URL,
     githubGraphqlUrl:
-      (core.getInput('github-graphql-url') || '').replace(/\/graphql$/, '') ||
-      DEFAULT_GITHUB_GRAPHQL_URL,
+      (core.getInput('github-graphql-url') || '').replace(/\/graphql$/, '') || DEFAULT_GITHUB_GRAPHQL_URL,
     proxyServer: getOptionalInput('proxy-server'),
     skipGitHubRelease: getOptionalBooleanInput('skip-github-release'),
     skipGitHubPullRequest: getOptionalBooleanInput('skip-github-pull-request'),
@@ -76,7 +75,7 @@ function parseInputs(): ActionInputs {
     fork: getOptionalBooleanInput('fork'),
     includeComponentInTag: getOptionalBooleanInput('include-component-in-tag'),
     changelogHost: core.getInput('changelog-host') || DEFAULT_GITHUB_SERVER_URL,
-    configOverrides
+    configOverrides,
   };
 }
 
@@ -132,10 +131,7 @@ function extractReleaserConfig(config: Record<string, any>): Partial<ReleaserCon
   };
 }
 
-function loadOrBuildManifest(
-  github: GitHub,
-  inputs: ActionInputs
-): Promise<Manifest> {
+function loadOrBuildManifest(github: GitHub, inputs: ActionInputs): Promise<Manifest> {
   const manifestOverrides = Object.fromEntries(
     Object.entries({
       fork: inputs.fork,
@@ -160,7 +156,7 @@ function loadOrBuildManifest(
         changelogHost: inputs.changelogHost,
       },
       manifestOverrides,
-      inputs.path
+      inputs.path,
     );
   }
 
@@ -170,12 +166,12 @@ function loadOrBuildManifest(
     github.repository.defaultBranch,
     inputs.configFile,
     inputs.manifestFile,
-    manifestOverrides
+    manifestOverrides,
   );
 }
 
 export async function main() {
-  core.info(`Running release-please version: ${VERSION}`)
+  core.info(`Running release-please version: ${VERSION}`);
   const inputs = parseInputs();
   const github = await getGitHubInstance(inputs);
 
@@ -224,7 +220,7 @@ function setPathOutput(path: string, key: string, value: string | boolean) {
 }
 
 function outputReleases(releases: (CreatedRelease | undefined)[]) {
-  releases = releases.filter(release => release !== undefined);
+  releases = releases.filter((release) => release !== undefined);
   const pathsReleased = [];
   core.setOutput('releases_created', releases.length > 0);
   if (releases.length) {
@@ -257,7 +253,7 @@ function outputReleases(releases: (CreatedRelease | undefined)[]) {
 }
 
 function outputPRs(prs: (PullRequest | undefined)[]) {
-  prs = prs.filter(pr => pr !== undefined);
+  prs = prs.filter((pr) => pr !== undefined);
   core.setOutput('prs_created', prs.length > 0);
   if (prs.length) {
     core.setOutput('pr', prs[0]);
@@ -266,7 +262,7 @@ function outputPRs(prs: (PullRequest | undefined)[]) {
 }
 
 if (require.main === module) {
-  main().catch(err => {
-    core.setFailed(`release-please failed: ${err.message}`)
-  })
+  main().catch((err) => {
+    core.setFailed(`release-please failed: ${err.message}`);
+  });
 }

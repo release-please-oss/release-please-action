@@ -1,7 +1,7 @@
 import * as action from '../src/index';
 import * as core from '@actions/core';
 import * as nock from 'nock';
-import {Manifest, GitHub} from 'release-please';
+import { Manifest, GitHub } from 'release-please';
 
 const DEFAULT_INPUTS: Record<string, string> = {
   token: 'fake-token',
@@ -31,7 +31,7 @@ const fixturePrs = [
 process.env.GITHUB_REPOSITORY = 'fakeOwner/fakeRepo';
 
 function mockInputs(inputs: Record<string, string>): void {
-  const allInputs = {...DEFAULT_INPUTS, ...inputs};
+  const allInputs = { ...DEFAULT_INPUTS, ...inputs };
   jest.spyOn(core, 'getInput').mockImplementation((name: string) => {
     return allInputs[name] || '';
   });
@@ -48,11 +48,9 @@ describe('release-please-action', () => {
 
   beforeEach(() => {
     output = {};
-    jest.spyOn(core, 'setOutput').mockImplementation(
-      (key: string, value: string | boolean) => {
-        output[key] = value;
-      }
-    );
+    jest.spyOn(core, 'setOutput').mockImplementation((key: string, value: string | boolean) => {
+      output[key] = value;
+    });
     // Default branch lookup:
     nock('https://api.github.com').get('/repos/fakeOwner/fakeRepo').reply(200, {
       default_branch: 'main',
@@ -70,10 +68,9 @@ describe('release-please-action', () => {
       beforeEach(() => {
         fakeManifest = {
           createReleases: jest.fn(),
-          createPullRequests: jest.fn()
+          createPullRequests: jest.fn(),
         } as any;
-        fromConfigStub = jest.spyOn(Manifest, 'fromConfig')
-          .mockResolvedValue(fakeManifest);
+        fromConfigStub = jest.spyOn(Manifest, 'fromConfig').mockResolvedValue(fakeManifest);
       });
 
       it('builds a manifest from config', async () => {
@@ -125,7 +122,7 @@ describe('release-please-action', () => {
 
       it('allows specifying fork', async () => {
         mockInputs({
-          'fork': 'true',
+          fork: 'true',
           'release-type': 'simple',
         });
         fakeManifest.createReleases.mockResolvedValue([]);
@@ -157,10 +154,9 @@ describe('release-please-action', () => {
       beforeEach(() => {
         fakeManifest = {
           createReleases: jest.fn(),
-          createPullRequests: jest.fn()
+          createPullRequests: jest.fn(),
         } as any;
-        fromManifestStub = jest.spyOn(Manifest, 'fromManifest')
-          .mockResolvedValue(fakeManifest);
+        fromManifestStub = jest.spyOn(Manifest, 'fromManifest').mockResolvedValue(fakeManifest);
       });
 
       it('loads a manifest from the repository', async () => {
@@ -207,7 +203,7 @@ describe('release-please-action', () => {
 
       it('allows specifying fork', async () => {
         mockInputs({
-          'fork': 'true',
+          fork: 'true',
         });
         fakeManifest.createReleases.mockResolvedValue([]);
         fakeManifest.createPullRequests.mockResolvedValue([]);
@@ -248,14 +244,14 @@ describe('release-please-action', () => {
           expect.any(String),
           expect.objectContaining({
             skipLabeling: true,
-          })
+          }),
         );
       });
 
       it('includes bootstrap-sha in manifest overrides when provided', async () => {
         mockInputs({
           'bootstrap-sha': 'abc123def',
-          'fork': 'true',
+          fork: 'true',
         });
         fakeManifest.createReleases.mockResolvedValue([]);
         fakeManifest.createPullRequests.mockResolvedValue([]);
@@ -271,7 +267,7 @@ describe('release-please-action', () => {
           expect.objectContaining({
             fork: true,
             bootstrapSha: 'abc123def',
-          })
+          }),
         );
       });
     });
@@ -281,54 +277,59 @@ describe('release-please-action', () => {
       beforeEach(() => {
         const fakeManifest = {
           createReleases: jest.fn(),
-          createPullRequests: jest.fn()
+          createPullRequests: jest.fn(),
         } as any;
         fakeManifest.createReleases.mockResolvedValue([]);
         fakeManifest.createPullRequests.mockResolvedValue([]);
-        fromConfigStub = jest.spyOn(Manifest, 'fromConfig')
-          .mockResolvedValue(fakeManifest);
+        fromConfigStub = jest.spyOn(Manifest, 'fromConfig').mockResolvedValue(fakeManifest);
       });
 
       it('parses valid JSON config overrides', async () => {
         mockInputs({
           'release-type': 'simple',
-          'config-overrides-json': '{"release-type": "node", "bump-minor-pre-major": true}'
+          'config-overrides-json': '{"release-type": "node", "bump-minor-pre-major": true}',
         });
         await action.main();
         const calls = fromConfigStub.mock.calls;
-        expect(calls[0][2]).toEqual(expect.objectContaining({
-          releaseType: 'simple',
-          bumpMinorPreMajor: true,
-        }));
+        expect(calls[0][2]).toEqual(
+          expect.objectContaining({
+            releaseType: 'simple',
+            bumpMinorPreMajor: true,
+          }),
+        );
       });
 
       it('handles empty config overrides', async () => {
         mockInputs({
           'release-type': 'simple',
-          'config-overrides-json': '{}'
+          'config-overrides-json': '{}',
         });
         await action.main();
         const calls = fromConfigStub.mock.calls;
-        expect(calls[0][2]).toEqual(expect.objectContaining({
-          releaseType: 'simple',
-        }));
+        expect(calls[0][2]).toEqual(
+          expect.objectContaining({
+            releaseType: 'simple',
+          }),
+        );
       });
 
       it('defaults to empty object when config-overrides-json not provided', async () => {
         mockInputs({
-          'release-type': 'simple'
+          'release-type': 'simple',
         });
         await action.main();
         const calls = fromConfigStub.mock.calls;
-        expect(calls[0][2]).toEqual(expect.objectContaining({
-          releaseType: 'simple',
-        }));
+        expect(calls[0][2]).toEqual(
+          expect.objectContaining({
+            releaseType: 'simple',
+          }),
+        );
       });
 
       it('throws error for invalid JSON', async () => {
         mockInputs({
           'release-type': 'simple',
-          'config-overrides-json': '{invalid json'
+          'config-overrides-json': '{invalid json',
         });
         await expect(action.main()).rejects.toThrow('Could not parse config override:');
       });
@@ -337,14 +338,16 @@ describe('release-please-action', () => {
         mockInputs({
           'release-type': 'simple',
           'include-component-in-tag': 'true',
-          'config-overrides-json': '{"release-type": "node", "include-component-in-tag": false}'
+          'config-overrides-json': '{"release-type": "node", "include-component-in-tag": false}',
         });
         await action.main();
         const calls = fromConfigStub.mock.calls;
-        expect(calls[0][2]).toEqual(expect.objectContaining({
-          releaseType: 'simple',
-          includeComponentInTag: true,
-        }));
+        expect(calls[0][2]).toEqual(
+          expect.objectContaining({
+            releaseType: 'simple',
+            includeComponentInTag: true,
+          }),
+        );
       });
 
       it('extracts complex config overrides correctly', async () => {
@@ -354,18 +357,20 @@ describe('release-please-action', () => {
             'changelog-sections': [{ type: 'feat', section: 'Features' }],
             'extra-files': ['VERSION.txt'],
             'skip-github-release': true,
-            'label': 'release: pending,autorelease: tagged'
-          })
+            label: 'release: pending,autorelease: tagged',
+          }),
         });
         await action.main();
         const calls = fromConfigStub.mock.calls;
-        expect(calls[0][2]).toEqual(expect.objectContaining({
-          releaseType: 'simple',
-          changelogSections: [{ type: 'feat', section: 'Features' }],
-          extraFiles: ['VERSION.txt'],
-          skipGithubRelease: true,
-          labels: ['release: pending', 'autorelease: tagged'],
-        }));
+        expect(calls[0][2]).toEqual(
+          expect.objectContaining({
+            releaseType: 'simple',
+            changelogSections: [{ type: 'feat', section: 'Features' }],
+            extraFiles: ['VERSION.txt'],
+            skipGithubRelease: true,
+            labels: ['release: pending', 'autorelease: tagged'],
+          }),
+        );
       });
     });
 
@@ -376,12 +381,11 @@ describe('release-please-action', () => {
       });
       const fakeManifest = {
         createReleases: jest.fn(),
-        createPullRequests: jest.fn()
+        createPullRequests: jest.fn(),
       } as any;
       fakeManifest.createReleases.mockResolvedValue([]);
       fakeManifest.createPullRequests.mockResolvedValue([]);
-      const fromManifestStub = jest.spyOn(Manifest, 'fromManifest')
-        .mockResolvedValue(fakeManifest);
+      const fromManifestStub = jest.spyOn(Manifest, 'fromManifest').mockResolvedValue(fakeManifest);
       await action.main();
       expect(fakeManifest.createReleases).toHaveBeenCalledTimes(1);
       expect(fakeManifest.createPullRequests).toHaveBeenCalledTimes(1);
@@ -399,7 +403,7 @@ describe('release-please-action', () => {
       const createGithubSpy = jest.spyOn(GitHub, 'create');
       const fakeManifest = {
         createReleases: jest.fn(),
-        createPullRequests: jest.fn()
+        createPullRequests: jest.fn(),
       } as any;
       fakeManifest.createReleases.mockResolvedValue([]);
       fakeManifest.createPullRequests.mockResolvedValue([]);
@@ -417,7 +421,7 @@ describe('release-please-action', () => {
             port: 9000,
           },
           defaultBranch: 'dev',
-        })
+        }),
       );
     });
   });
@@ -427,7 +431,7 @@ describe('release-please-action', () => {
       mockInputs({});
       const fakeManifest = {
         createReleases: jest.fn(),
-        createPullRequests: jest.fn()
+        createPullRequests: jest.fn(),
       } as any;
       fakeManifest.createReleases.mockResolvedValue([
         {
@@ -471,7 +475,7 @@ describe('release-please-action', () => {
       mockInputs({});
       const fakeManifest = {
         createReleases: jest.fn(),
-        createPullRequests: jest.fn()
+        createPullRequests: jest.fn(),
       } as any;
       fakeManifest.createReleases.mockResolvedValue([]);
       fakeManifest.createPullRequests.mockResolvedValue([fixturePrs[0]]);
@@ -480,7 +484,7 @@ describe('release-please-action', () => {
       expect(fakeManifest.createReleases).toHaveBeenCalledTimes(1);
       expect(fakeManifest.createPullRequests).toHaveBeenCalledTimes(1);
 
-      const {pr, prs, prs_created} = output;
+      const { pr, prs, prs_created } = output;
       expect(prs_created).toBe(true);
       expect(pr).toEqual(fixturePrs[0]);
       expect(prs).toEqual(JSON.stringify([fixturePrs[0]]));
@@ -490,7 +494,7 @@ describe('release-please-action', () => {
       mockInputs({});
       const fakeManifest = {
         createReleases: jest.fn(),
-        createPullRequests: jest.fn()
+        createPullRequests: jest.fn(),
       } as any;
       fakeManifest.createReleases.mockResolvedValue([
         {
@@ -563,7 +567,7 @@ describe('release-please-action', () => {
       mockInputs({});
       const fakeManifest = {
         createReleases: jest.fn(),
-        createPullRequests: jest.fn()
+        createPullRequests: jest.fn(),
       } as any;
       fakeManifest.createReleases.mockResolvedValue([]);
       fakeManifest.createPullRequests.mockResolvedValue(fixturePrs);
@@ -572,7 +576,7 @@ describe('release-please-action', () => {
       expect(fakeManifest.createReleases).toHaveBeenCalledTimes(1);
       expect(fakeManifest.createPullRequests).toHaveBeenCalledTimes(1);
 
-      const {pr, prs} = output;
+      const { pr, prs } = output;
       expect(pr).toEqual(fixturePrs[0]);
       expect(prs).toEqual(JSON.stringify(fixturePrs));
     });
@@ -581,7 +585,7 @@ describe('release-please-action', () => {
       mockInputs({});
       const fakeManifest = {
         createReleases: jest.fn(),
-        createPullRequests: jest.fn()
+        createPullRequests: jest.fn(),
       } as any;
       fakeManifest.createReleases.mockResolvedValue([]);
       fakeManifest.createPullRequests.mockResolvedValue([]);

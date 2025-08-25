@@ -6,15 +6,6 @@
     "outDir": "build",
     "resolveJsonModule": true
   },
-  "include": [
-    "src/*.ts",
-    "src/**/*.ts",
-    "test/*.ts",
-    "test/**/*.ts",
-    "system-test/*.ts"
-  ],
-  "exclude": [
-    "src/*.spec.ts",
-    "src/**/*.spec.ts"
-  ]
+  "include": ["src/*.ts", "src/**/*.ts", "test/*.ts", "test/**/*.ts", "system-test/*.ts"],
+  "exclude": ["src/*.spec.ts", "src/**/*.spec.ts"]
 }

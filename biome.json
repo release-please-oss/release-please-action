@@ -7,14 +7,7 @@
     "defaultBranch": "main"
   },
   "files": {
-    "includes": [
-      "src/**/*.ts",
-      "**/*.json",
-      "jest.config.ts",
-      "!dist",
-      "!build",
-      "!coverage"
-    ],
+    "includes": ["src/**/*.ts", "**/*.json", "jest.config.ts", "!dist", "!build", "!coverage"],
     "ignoreUnknown": false
   },
   "formatter": {
@@ -38,8 +31,8 @@
     "formatter": {
       "enabled": true,
       "jsxQuoteStyle": "single",
-      "trailingCommas": "none",
-      "semicolons": "asNeeded",
+      "trailingCommas": "all",
+      "semicolons": "always",
       "indentStyle": "space",
       "indentWidth": 2,
       "lineWidth": 120,
