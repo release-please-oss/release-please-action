@@ -8,10 +8,10 @@
     "test": "jest --ci --passWithNoTests=false --coverage",
     "prepare": "npm run compile",
     "lint": "biome check .",
+    "lint:ci": "biome ci .",
     "fix": "biome check --write .",
     "compile": "tsc -p ./tsconfig.app.json",
-    "build": "ncc build src/index.ts",
-    "pretest": "npm run compile"
+    "build": "ncc build src/index.ts"
   },
   "repository": {
     "type": "git",

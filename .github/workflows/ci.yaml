@@ -51,6 +51,30 @@ jobs:
           directory: 'build/junit'
           fail_ci_if_error: true
 
+  lint:
+    name: 'Lint'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v5.0.0
+        with:
+          fetch-depth: 2
+      - name: Setup Node environment
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version-file: 'package.json'
+      - name: Cache NodeJS dependencies
+        uses: actions/cache@v4.2.4
+        id: nodejs-cache
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-${{ runner.arch }}-npm-${{ hashFiles('./package-lock.json') }}
+      - name: Install NodeJS dependencies
+        if: ${{ steps.nodejs-cache.outputs.cache-hit != 'true' }}
+        run: npm ci --no-audit
+      - name: Lint
+        run: npm run lint:ci
+
   build:
     name: 'Build'
     runs-on: ubuntu-24.04

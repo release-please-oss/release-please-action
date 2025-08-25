@@ -2,7 +2,7 @@ ignore:
   - "dist/.*"
 coverage:
   status:
-    patch: off
+    patch: false
     project:
       default:
         target: 95%

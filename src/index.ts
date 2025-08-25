@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import * as core from '@actions/core';
-import { CreatedRelease, GitHub, Manifest, PullRequest, VERSION, ReleaserConfig } from 'release-please';
+import { type CreatedRelease, GitHub, Manifest, type PullRequest, VERSION, type ReleaserConfig } from 'release-please';
 
 const DEFAULT_CONFIG_FILE = 'release-please-config.json';
 const DEFAULT_MANIFEST_FILE = '.release-please-manifest.json';
@@ -49,7 +49,7 @@ interface ActionInputs {
 
 function parseInputs(): ActionInputs {
   const configOverrideJson = getOptionalInput('config-overrides-json') || '{}';
-  let configOverrides;
+  let configOverrides: object;
   try {
     configOverrides = JSON.parse(configOverrideJson);
   } catch (error) {
@@ -92,6 +92,7 @@ function getOptionalBooleanInput(name: string): boolean | undefined {
 }
 
 // copied over from https://github.com/googleapis/release-please/blob/5d62849f23940e3dc1dd08beb2732792c2f6ea0e/src/manifest.ts#L1372
+// biome-ignore-start lint/complexity/useLiteralKeys: copied code
 function extractReleaserConfig(config: Record<string, any>): Partial<ReleaserConfig> {
   return {
     releaseType: config['release-type'],
@@ -130,6 +131,7 @@ function extractReleaserConfig(config: Record<string, any>): Partial<ReleaserCon
     dateFormat: config['date-format'],
   };
 }
+// biome-ignore-end lint/complexity/useLiteralKeys: copied code
 
 function loadOrBuildManifest(github: GitHub, inputs: ActionInputs): Promise<Manifest> {
   const manifestOverrides = Object.fromEntries(
@@ -137,11 +139,11 @@ function loadOrBuildManifest(github: GitHub, inputs: ActionInputs): Promise<Mani
       fork: inputs.fork,
       skipLabeling: inputs.skipLabeling,
       bootstrapSha: inputs.bootstrapSha,
-    }).filter(([key, value]) => value !== undefined),
+    }).filter(([_key, value]) => value !== undefined),
   );
 
   const releaserConfig = Object.fromEntries(
-    Object.entries(extractReleaserConfig(inputs.configOverrides)).filter(([key, value]) => value !== undefined),
+    Object.entries(extractReleaserConfig(inputs.configOverrides)).filter(([_key, value]) => value !== undefined),
   );
 
   if (inputs.releaseType) {
@@ -190,12 +192,12 @@ export async function main() {
 
 function getGitHubInstance(inputs: ActionInputs): Promise<GitHub> {
   const [owner, repo] = inputs.repoUrl.split('/');
-  let proxy: Proxy | undefined = undefined;
+  let proxy: Proxy | undefined ;
   if (inputs.proxyServer) {
     const [host, port] = inputs.proxyServer.split(':');
     proxy = {
       host,
-      port: parseInt(port),
+      port: parseInt(port, 10),
     };
   }
 
