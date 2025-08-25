@@ -5,7 +5,9 @@
     "rootDir": ".",
     "outDir": "build",
     "resolveJsonModule": true,
-    "types": ["mocha", "node"]
+    "types": [
+      "node"
+    ]
   },
   "include": [
     "src/*.ts",

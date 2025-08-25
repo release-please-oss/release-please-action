@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v5.0.0
+        with:
+          fetch-depth: 2
       - name: Setup Node environment
         uses: actions/setup-node@v4.4.0
         with:
@@ -31,10 +33,14 @@ jobs:
       - name: Install NodeJS dependencies
         if: ${{ steps.nodejs-cache.outputs.cache-hit != 'true' }}
         run: npm ci --no-audit
-      - name: Run tests (Mocha)
+      - name: Run tests
         run: npm run test
-      - name: Run tests (Jest)
-        run: npm run test:jest
+      - name: Codecov
+        uses: codecov/codecov-action@v5.5.0
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: 'coverage'
+          fail_ci_if_error: true
 
   build:
     name: 'Build'
