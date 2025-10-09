@@ -1,5 +1,18 @@
 # Changelog
 
+## [5.3.1](https://github.com/release-please-oss/release-please-action/compare/v5.3.0...v5.3.1) (2025-10-09)
+
+
+### Miscellaneous Chores
+
+* apply formatting fixes ([#23](https://github.com/release-please-oss/release-please-action/issues/23)) ([d27ded6](https://github.com/release-please-oss/release-please-action/commit/d27ded664c2dac24801af4734c58863eb235db44))
+* use biome as linter/formatter ([#21](https://github.com/release-please-oss/release-please-action/issues/21)) ([639bd57](https://github.com/release-please-oss/release-please-action/commit/639bd5750e281076ee765710e1a530ddcad8649d))
+
+
+### Dependency updates
+
+* update release-please to v17.1.3 ([#26](https://github.com/release-please-oss/release-please-action/issues/26)) ([90d8dd0](https://github.com/release-please-oss/release-please-action/commit/90d8dd0d7069b539f815338d57c827c1e1f0dcfb))
+
 ## [5.3.0](https://github.com/release-please-oss/release-please-action/compare/v5.2.0...v5.3.0) (2025-08-25)
 
 
