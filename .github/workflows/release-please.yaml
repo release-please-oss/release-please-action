@@ -56,6 +56,11 @@ jobs:
                   "type": "refactor",
                   "hidden": false,
                   "section": "Code Refactoring"
+                },
+                {
+                  "type": "deps",
+                  "hidden": false,
+                  "section": "Dependency updates"
                 }
               ]
             }
