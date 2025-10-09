@@ -1,3 +1,5 @@
+import type { Config } from 'jest';
+
 export default {
   displayName: 'release-please-action',
   testEnvironment: 'node',
@@ -8,4 +10,4 @@ export default {
   collectCoverageFrom: ['src/**/*.ts', '!src/**/*.d.ts'],
   coverageDirectory: 'coverage',
   reporters: ['default', ['jest-junit', { classNameTemplate: '{filepath}', outputDirectory: './build/junit' }]],
-};
+} satisfies Config;
