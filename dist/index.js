@@ -46518,6 +46518,7 @@ const signoff_commit_message_1 = __nccwpck_require__(2686);
 const git_file_utils_1 = __nccwpck_require__(32997);
 const https_proxy_agent_1 = __nccwpck_require__(77219);
 const http_proxy_agent_1 = __nccwpck_require__(23764);
+const composite_1 = __nccwpck_require__(40911);
 class GitHub {
     constructor(options) {
         var _a;
@@ -47535,8 +47536,12 @@ class GitHub {
      * @throws {GitHubAPIError} on an API error
      */
     async buildChangeSet(updates, defaultBranch) {
+        // Sometimes multiple updates are proposed for the same file,
+        // such as when the manifest file is additionally changed by the
+        // node-workspace plugin. We need to merge these updates.
+        const mergedUpdates = (0, composite_1.mergeUpdates)(updates);
         const changes = new Map();
-        for (const update of updates) {
+        for (const update of mergedUpdates) {
             let content;
             try {
                 content = await this.getFileContentsOnBranch(update.path, defaultBranch);
@@ -47796,7 +47801,7 @@ Object.defineProperty(exports, "GitHub", ({ enumerable: true, get: function () {
 exports.configSchema = __nccwpck_require__(38623);
 exports.manifestSchema = __nccwpck_require__(45314);
 // x-release-please-start-version
-exports.VERSION = '17.1.2';
+exports.VERSION = '17.1.3';
 // x-release-please-end
 //# sourceMappingURL=index.js.map
 
@@ -55153,6 +55158,7 @@ exports.Generic = exports.DEFAULT_DATE_FORMAT = void 0;
 const default_1 = __nccwpck_require__(69995);
 const logger_1 = __nccwpck_require__(68809);
 const VERSION_REGEX = /(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)(-(?<preRelease>[\w.]+))?(\+(?<build>[-\w.]+))?/;
+const MAJOR_VERSION_REGEX = /\d+\b/;
 const SINGLE_VERSION_REGEX = /\b\d+\b/;
 const INLINE_UPDATE_REGEX = /x-release-please-(?<scope>major|minor|patch|version-date|version|date)/;
 const BLOCK_START_REGEX = /x-release-please-start-(?<scope>major|minor|patch|version-date|version|date)/;
@@ -55230,7 +55236,7 @@ class Generic extends default_1.DefaultUpdater {
                     newLines.push(line.replace(VERSION_REGEX, version.toString()));
                     return;
                 case 'major':
-                    newLines.push(line.replace(SINGLE_VERSION_REGEX, `${version.major}`));
+                    newLines.push(line.replace(MAJOR_VERSION_REGEX, `${version.major}`));
                     return;
                 case 'minor':
                     newLines.push(line.replace(SINGLE_VERSION_REGEX, `${version.minor}`));
@@ -104802,7 +104808,7 @@ exports.JSONPath = JSONPath;
 /***/ ((module) => {
 
 "use strict";
-module.exports = {"i8":"17.1.2"};
+module.exports = {"i8":"17.1.3"};
 
 /***/ }),
 
@@ -104918,8 +104924,7 @@ function parseInputs() {
         configFile: core.getInput('config-file') || DEFAULT_CONFIG_FILE,
         manifestFile: core.getInput('manifest-file') || DEFAULT_MANIFEST_FILE,
         githubApiUrl: core.getInput('github-api-url') || DEFAULT_GITHUB_API_URL,
-        githubGraphqlUrl: (core.getInput('github-graphql-url') || '').replace(/\/graphql$/, '') ||
-            DEFAULT_GITHUB_GRAPHQL_URL,
+        githubGraphqlUrl: (core.getInput('github-graphql-url') || '').replace(/\/graphql$/, '') || DEFAULT_GITHUB_GRAPHQL_URL,
         proxyServer: getOptionalInput('proxy-server'),
         skipGitHubRelease: getOptionalBooleanInput('skip-github-release'),
         skipGitHubPullRequest: getOptionalBooleanInput('skip-github-pull-request'),
@@ -104928,7 +104933,7 @@ function parseInputs() {
         fork: getOptionalBooleanInput('fork'),
         includeComponentInTag: getOptionalBooleanInput('include-component-in-tag'),
         changelogHost: core.getInput('changelog-host') || DEFAULT_GITHUB_SERVER_URL,
-        configOverrides
+        configOverrides,
     };
 }
 function getOptionalInput(name) {
@@ -104942,6 +104947,7 @@ function getOptionalBooleanInput(name) {
     return core.getBooleanInput(name);
 }
 // copied over from https://github.com/googleapis/release-please/blob/5d62849f23940e3dc1dd08beb2732792c2f6ea0e/src/manifest.ts#L1372
+// biome-ignore-start lint/complexity/useLiteralKeys: copied code
 function extractReleaserConfig(config) {
     var _a, _b, _c;
     return {
@@ -104981,13 +104987,14 @@ function extractReleaserConfig(config) {
         dateFormat: config['date-format'],
     };
 }
+// biome-ignore-end lint/complexity/useLiteralKeys: copied code
 function loadOrBuildManifest(github, inputs) {
     const manifestOverrides = Object.fromEntries(Object.entries({
         fork: inputs.fork,
         skipLabeling: inputs.skipLabeling,
         bootstrapSha: inputs.bootstrapSha,
-    }).filter(([key, value]) => value !== undefined));
-    const releaserConfig = Object.fromEntries(Object.entries(extractReleaserConfig(inputs.configOverrides)).filter(([key, value]) => value !== undefined));
+    }).filter(([_key, value]) => value !== undefined));
+    const releaserConfig = Object.fromEntries(Object.entries(extractReleaserConfig(inputs.configOverrides)).filter(([_key, value]) => value !== undefined));
     if (inputs.releaseType) {
         core.debug('Building manifest from config');
         return release_please_1.Manifest.fromConfig(github, github.repository.defaultBranch, {
@@ -105018,12 +105025,12 @@ async function main() {
 exports.main = main;
 function getGitHubInstance(inputs) {
     const [owner, repo] = inputs.repoUrl.split('/');
-    let proxy = undefined;
+    let proxy;
     if (inputs.proxyServer) {
         const [host, port] = inputs.proxyServer.split(':');
         proxy = {
             host,
-            port: parseInt(port),
+            port: parseInt(port, 10),
         };
     }
     const githubCreateOpts = {
@@ -105046,7 +105053,7 @@ function setPathOutput(path, key, value) {
     }
 }
 function outputReleases(releases) {
-    releases = releases.filter(release => release !== undefined);
+    releases = releases.filter((release) => release !== undefined);
     const pathsReleased = [];
     core.setOutput('releases_created', releases.length > 0);
     if (releases.length) {
@@ -105082,7 +105089,7 @@ function outputReleases(releases) {
     core.setOutput('paths_released', JSON.stringify(pathsReleased));
 }
 function outputPRs(prs) {
-    prs = prs.filter(pr => pr !== undefined);
+    prs = prs.filter((pr) => pr !== undefined);
     core.setOutput('prs_created', prs.length > 0);
     if (prs.length) {
         core.setOutput('pr', prs[0]);
@@ -105090,7 +105097,7 @@ function outputPRs(prs) {
     }
 }
 if (require.main === require.cache[eval('__filename')]) {
-    main().catch(err => {
+    main().catch((err) => {
         core.setFailed(`release-please failed: ${err.message}`);
     });
 }
