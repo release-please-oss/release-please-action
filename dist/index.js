@@ -2048,7 +2048,7 @@ var require_buffer_from = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 //#region node_modules/source-map-support/source-map-support.js
 var require_source_map_support = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	var SourceMapConsumer = require_source_map().SourceMapConsumer;
-	var path$2 = __require("path");
+	var path$3 = __require("path");
 	var fs;
 	try {
 		fs = __require("fs");
@@ -2125,15 +2125,15 @@ var require_source_map_support = /* @__PURE__ */ __commonJSMin(((exports, module
 	});
 	function supportRelativeURL(file, url) {
 		if (!file) return url;
-		var dir = path$2.dirname(file);
+		var dir = path$3.dirname(file);
 		var match = /^\w+:\/\/[^\/]*/.exec(dir);
 		var protocol = match ? match[0] : "";
 		var startPath = dir.slice(protocol.length);
 		if (protocol && /^\/\w\:/.test(startPath)) {
 			protocol += "/";
-			return protocol + path$2.resolve(dir.slice(protocol.length), url).replace(/\\/g, "/");
+			return protocol + path$3.resolve(dir.slice(protocol.length), url).replace(/\\/g, "/");
 		}
-		return protocol + path$2.resolve(dir.slice(protocol.length), url);
+		return protocol + path$3.resolve(dir.slice(protocol.length), url);
 	}
 	function retrieveSourceMapURL(source) {
 		var fileData;
@@ -32507,10 +32507,10 @@ var require_conventional_changelog_writer = /* @__PURE__ */ __commonJSMin(((expo
 			includeDetails: false,
 			ignoreReverted: true,
 			doFlush: true,
-			mainTemplate: readFileSync("./template.hbs", "utf-8"),
-			headerPartial: readFileSync("./header.hbs", "utf-8"),
-			commitPartial: readFileSync("./commit.hbs", "utf-8"),
-			footerPartial: readFileSync("./footer.hbs", "utf-8"),
+			mainTemplate: readFileSync(join(path$2.dirname(fileURLToPath(import.meta.url)), "template.hbs"), "utf-8"),
+			headerPartial: readFileSync(join(path$2.dirname(fileURLToPath(import.meta.url)), "header.hbs"), "utf-8"),
+			commitPartial: readFileSync(join(path$2.dirname(fileURLToPath(import.meta.url)), "commit.hbs"), "utf-8"),
+			footerPartial: readFileSync(join(path$2.dirname(fileURLToPath(import.meta.url)), "footer.hbs"), "utf-8"),
 			...options
 		};
 		if (!options.transform || typeof options.transform === "object") options.transform = {
@@ -32833,10 +32833,10 @@ var require_writer_opts = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			prefix: "{{this.prefix}}"
 		});
 		const [template, header, commit, footer] = await Promise.all([
-			readFile("./template1.hbs", "utf-8"),
-			readFile("./header1.hbs", "utf-8"),
-			readFile("./commit1.hbs", "utf-8"),
-			readFile("./footer1.hbs", "utf-8")
+			readFile(resolve(path$2.dirname(fileURLToPath(import.meta.url)), "template1.hbs"), "utf-8"),
+			readFile(resolve(path$2.dirname(fileURLToPath(import.meta.url)), "header1.hbs"), "utf-8"),
+			readFile(resolve(path$2.dirname(fileURLToPath(import.meta.url)), "commit1.hbs"), "utf-8"),
+			readFile(resolve(path$2.dirname(fileURLToPath(import.meta.url)), "footer1.hbs"), "utf-8")
 		]);
 		const writerOpts = getWriterOpts(config);
 		writerOpts.mainTemplate = template;

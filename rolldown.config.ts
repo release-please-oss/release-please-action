@@ -15,15 +15,15 @@ export default defineConfig({
     // Can be resolved by updating to v8.4.0 or higher in release-please itself
     replacePlugin(
       {
-        "join(__dirname, 'templates/commit.hbs')": "'./commit.hbs'",
-        "join(__dirname, 'templates/footer.hbs')": "'./footer.hbs'",
-        "join(__dirname, 'templates/header.hbs')": "'./header.hbs'",
-        "join(__dirname, 'templates/template.hbs')": "'./template.hbs'",
+        "join(__dirname, 'templates/commit.hbs')": "join(path$2.dirname(fileURLToPath(import.meta.url)), 'commit.hbs')",
+        "join(__dirname, 'templates/footer.hbs')": "join(path$2.dirname(fileURLToPath(import.meta.url)), 'footer.hbs')",
+        "join(__dirname, 'templates/header.hbs')": "join(path$2.dirname(fileURLToPath(import.meta.url)), 'header.hbs')",
+        "join(__dirname, 'templates/template.hbs')": "join(path$2.dirname(fileURLToPath(import.meta.url)), 'template.hbs')",
         //
-        'resolve(__dirname, "./templates/commit.hbs")': "'./commit1.hbs'",
-        'resolve(__dirname, "./templates/footer.hbs")': "'./footer1.hbs'",
-        'resolve(__dirname, "./templates/header.hbs")': "'./header1.hbs'",
-        'resolve(__dirname, "./templates/template.hbs")': "'./template1.hbs'",
+        'resolve(__dirname, "./templates/commit.hbs")': "resolve(path$2.dirname(fileURLToPath(import.meta.url)), 'commit1.hbs')",
+        'resolve(__dirname, "./templates/footer.hbs")': "resolve(path$2.dirname(fileURLToPath(import.meta.url)), 'footer1.hbs')",
+        'resolve(__dirname, "./templates/header.hbs")': "resolve(path$2.dirname(fileURLToPath(import.meta.url)), 'header1.hbs')",
+        'resolve(__dirname, "./templates/template.hbs")': "resolve(path$2.dirname(fileURLToPath(import.meta.url)), 'template1.hbs')",
       },
       {
         delimiters: ['', ''],
