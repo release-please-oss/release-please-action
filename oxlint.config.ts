@@ -1,8 +1,7 @@
-import { defineConfig } from "oxlint";
-
-import core from "ultracite/oxlint/core";
-import vitest from "ultracite/oxlint/vitest";
-import jest from "ultracite/oxlint/jest";
+import { defineConfig } from 'oxlint';
+import core from 'ultracite/oxlint/core';
+import jest from 'ultracite/oxlint/jest';
+import vitest from 'ultracite/oxlint/vitest';
 
 export default defineConfig({
   extends: [
@@ -10,5 +9,5 @@ export default defineConfig({
     // vitest,
     jest,
   ],
-  ignorePatterns: ["dist/**/*", "coverage/**/*", "build/**/*"],
+  ignorePatterns: ['dist/**/*', 'coverage/**/*', 'build/**/*'],
 });

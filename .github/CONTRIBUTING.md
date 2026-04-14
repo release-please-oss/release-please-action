@@ -19,11 +19,11 @@ If you find a bug or have a suggestion for improvement:
 
 1. Check if the issue already exists
 2. If not, create a new issue with:
-    - A clear, descriptive title
-    - A detailed description of the problem or suggestion
-    - Steps to reproduce (for bugs)
-    - Expected vs actual behavior (for bugs)
-    - Any relevant error messages or screenshots
+   - A clear, descriptive title
+   - A detailed description of the problem or suggestion
+   - Steps to reproduce (for bugs)
+   - Expected vs actual behavior (for bugs)
+   - Any relevant error messages or screenshots
 
 ### Submitting Changes
 

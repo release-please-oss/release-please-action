@@ -1,5 +1,5 @@
 ignore:
-  - "dist/.*"
+  - 'dist/.*'
 coverage:
   status:
     patch: off
@@ -9,7 +9,7 @@ coverage:
         threshold: 2%
         base: auto
 comment:
-  layout: "header, diff, files"
+  layout: 'header, diff, files'
   behavior: default
   require_changes: false
   hide_project_coverage: false

@@ -113,7 +113,7 @@ steps:
     with:
       token: ${{ secrets.MY_RELEASE_PLEASE_TOKEN }}
       release-type: simple
-      include-component-in-tag: true  # This overrides JSON config
+      include-component-in-tag: true # This overrides JSON config
       config-overrides-json: |
         {
           "include-component-in-tag": false,  # Ignored due to direct input
@@ -124,7 +124,7 @@ steps:
 ## Action Inputs
 
 | input                      | description                                                                                                                            |
-|----------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | `token`                    | A GitHub secret token, the action defaults to using the special `secrets.GITHUB_TOKEN`                                                 |
 | `release-type`             | If specified, defines the release strategy to use for the repository. Reference [Release types supported](#release-types-supported)    |
 | `path`                     | create a release from a path other than the repository's root                                                                          |
@@ -140,7 +140,7 @@ steps:
 | `skip-github-release`      | If `true`, do not attempt to create releases. This is useful if splitting release tagging from PR creation.                            |
 | `skip-github-pull-request` | If `true`, do not attempt to create release pull requests. This is useful if splitting release tagging from PR creation.               |
 | `skip-labeling`            | If `true`, do not attempt to label the PR.                                                                                             |
-| `bootstrap-sha`            | How far back (exclusive) to pull commits for conventional commit parsing.                                                               |
+| `bootstrap-sha`            | How far back (exclusive) to pull commits for conventional commit parsing.                                                              |
 | `config-overrides-json`    | JSON string of release-please configuration options. Allows inline configuration without a separate config file.                       |
 
 ## GitHub Credentials
@@ -151,7 +151,7 @@ the `token` configuration option.
 If your repository is in an organization, you may need to
 [permit github actions to create an approve PRs](https://stackoverflow.com/questions/72376229).
 
-> [!WARNING]  
+> [!WARNING]
 > If using GitHub Actions, you will need to specify a `token` for your workflows to run on
 > Release Please's releases and PRs. See [the heading below](#other-actions-on-release-please-prs).
 
@@ -202,7 +202,7 @@ For more information about permissions:
 Release Please automates releases for the following flavors of repositories:
 
 | release type       | description                                                                                                                                                                                                |
-|--------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `dart`             | A repository with a pubspec.yaml and a CHANGELOG.md                                                                                                                                                        |
 | `elixir`           | An elixir repository with a mix.exs and a CHANGELOG.md                                                                                                                                                     |
 | `expo`             | An Expo based React Native repository, with a package.json, app.json and CHANGELOG.md                                                                                                                      |
@@ -224,16 +224,14 @@ Release Please automates releases for the following flavors of repositories:
 New types of releases can
 be [added here](https://github.com/release-please-oss/release-please/tree/main/src/strategies).
 
-> You can also find them in
->
-the [release-please repository](https://github.com/release-please-oss/release-please/tree/main#strategy-language-types-supported).
+> You can also find them in the [release-please repository](https://github.com/release-please-oss/release-please/tree/main#strategy-language-types-supported).
 
 ## Outputs
 
 > Properties that are available after the action executed.
 
 | output             | description                                                                                                                                                               |
-|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `releases_created` | `true` if any release was created, `false` otherwise                                                                                                                      |
 | `paths_released`   | A JSON string of the array of paths that had releases created (`[]` if nothing was released)                                                                              |
 | `prs_created`      | `true` if any pull request was created or updated                                                                                                                         |
@@ -245,7 +243,7 @@ the [release-please repository](https://github.com/release-please-oss/release-pl
 If you have a root component (path is `.` or unset), then the action will also output:
 
 | output            | description                                                                                                |
-|-------------------|------------------------------------------------------------------------------------------------------------|
+| ----------------- | ---------------------------------------------------------------------------------------------------------- |
 | `release_created` | `true` if a root component release was created, `false` otherwise                                          |
 | `upload_url`      | Directly related to [**Create a release**](https://developer.github.com/v3/repos/releases/#response-4) API |
 | `html_url`        | Directly related to [**Create a release**](https://developer.github.com/v3/repos/releases/#response-4) API |
@@ -265,7 +263,7 @@ directory, then your outputs will have the `path` prefixed to the output name.
 This prefix allows you to distinguish values for different releases.
 
 | output                    | description                                                                                                |
-|---------------------------|------------------------------------------------------------------------------------------------------------|
+| ------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | `<path>--release_created` | `true` if the release was created, `false` otherwise                                                       |
 | `<path>--upload_url`      | Directly related to [**Create a release**](https://developer.github.com/v3/repos/releases/#response-4) API |
 | `<path>--html_url`        | Directly related to [**Create a release**](https://developer.github.com/v3/repos/releases/#response-4) API |
@@ -461,7 +459,7 @@ jobs:
 If you were setting the `command` option, you will likely need to modify your configuration.
 
 | Command          | New Configuration                                                | Description                                                                                                                                  |
-|------------------|------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| ---------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | `github-release` | `skip-github-pull-request: true`                                 | This command was used for only tagging releases. Now we tell release-please to skip opening release PRs.                                     |
 | `release-pr`     | `skip-github-release: true`                                      | This command was used for only opening release PRs. Now we tell release-please to skip tagging releases.                                     |
 | `manifest`       | do not set `release-type` option                                 | This command told release-please to use a manifest config file. This is now the default behavior unless you explicitly set a `release-type`. |
@@ -474,7 +472,7 @@ will need to configure via the release-please manifest configuration instead. Be
 you can see a mapping of the old option to the new option:
 
 | Old Option                         | New Option                                                                            | Notes                                                                               |
-|------------------------------------|---------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
+| ---------------------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
 | `path`                             | `$.packages`                                                                          | The root `packages` field is an object where the key is the `path` being configured |
 | `changelog-path`                   | `$.packages[path].changelog-path`                                                     | Package-only option                                                                 |
 | `component`                        | `$.packages[path].component`                                                          | Package-only option                                                                 |

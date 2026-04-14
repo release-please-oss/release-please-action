@@ -99,8 +99,6 @@ jobs:
         if: ${{ steps.nodejs-cache.outputs.cache-hit != 'true' }}
         run: npm ci --no-audit
       - name: Format
-        # TODO: remove after applying fixes
-        continue-on-error: true
         run: npm run fmt:check
 
   build:

@@ -5,7 +5,7 @@ export default defineConfig({
   bracketSameLine: false,
   bracketSpacing: true,
   endOfLine: 'lf',
-  ignorePatterns: ['dist/**/*'],
+  ignorePatterns: ['dist/**/*', 'CHANGELOG.md'],
   jsxSingleQuote: false,
   printWidth: 120,
   quoteProps: 'as-needed',
@@ -13,11 +13,11 @@ export default defineConfig({
   singleQuote: true,
   sortImports: {
     ignoreCase: true,
-    newlinesBetween: true,
+    newlinesBetween: false,
     order: 'asc',
   },
   sortPackageJson: true,
   tabWidth: 2,
-  trailingComma: 'es5',
+  trailingComma: 'all',
   useTabs: false,
 });
