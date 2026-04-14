@@ -1,12 +1,21 @@
 {
-  "extends": "./node_modules/gts/tsconfig-google.json",
   "compilerOptions": {
-    "allowSyntheticDefaultImports": true,
-    "rootDir": ".",
-    "outDir": "build",
-    "resolveJsonModule": true,
-    "strictNullChecks": true
-  },
-  "include": ["src/*.ts", "src/**/*.ts", "test/*.ts", "test/**/*.ts", "system-test/*.ts"],
-  "exclude": ["test/*.jest.ts", "test/**/*.jest.ts"]
+    "composite": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "importHelpers": true,
+    "isolatedModules": true,
+    "lib": ["es2024", "ESNext.Array", "ESNext.Collection", "ESNext.Iterator", "ESNext.Promise"],
+    "module": "es2022",
+    "moduleResolution": "bundler",
+    "noEmitOnError": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "es2024",
+    "customConditions": ["development"]
+  }
 }
