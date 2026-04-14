@@ -1,53 +1,58 @@
 {
   "name": "release-please-action",
-  "private": true,
   "version": "5.3.2",
+  "private": true,
+  "type": "module",
   "description": "automated releases based on conventional commits",
-  "main": "index.js",
-  "scripts": {
-    "test": "jest --ci --passWithNoTests=false --coverage",
-    "prepare": "npm run compile",
-    "lint": "biome check .",
-    "lint:ci": "biome ci .",
-    "fix": "biome check --write .",
-    "compile": "tsc -p ./tsconfig.app.json",
-    "build": "ncc build src/index.ts"
+  "keywords": [
+    "action",
+    "release-please"
+  ],
+  "homepage": "https://github.com/release-please-oss/release-please-action#readme",
+  "bugs": {
+    "url": "https://github.com/release-please-oss/release-please-action/issues"
   },
+  "license": "Apache-2.0",
+  "author": "Ben Coe <bencoe@gmail.com>",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/release-please-oss/release-please-action.git"
   },
-  "keywords": [
-    "release-please",
-    "action"
-  ],
-  "author": "Ben Coe <bencoe@gmail.com>",
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/release-please-oss/release-please-action/issues"
+  "main": "index.js",
+  "scripts": {
+    "prepare": "lefthook install",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "test": "jest --ci --passWithNoTests=false --coverage",
+    "compile": "tsc -p ./tsconfig.app.json",
+    "build": "ncc build src/index.ts"
   },
-  "homepage": "https://github.com/release-please-oss/release-please-action#readme",
   "dependencies": {
     "@actions/core": "^1.10.0",
     "release-please": "^17.1.3"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.2",
     "@types/jest": "^30.0.0",
     "@types/node": "^20.8.10",
     "@vercel/ncc": "^0.38.0",
     "gts": "^5.2.0",
     "jest": "^30.0.5",
     "jest-junit": "^16.0.0",
+    "lefthook": "^2.1.5",
     "nock": "^14.0.10",
+    "oxfmt": "^0.45.0",
+    "oxlint": "^1.60.0",
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
-    "typescript": "^4.6.4"
+    "typescript": "^4.6.4",
+    "ultracite": "^7.5.8"
   },
   "engines": {
     "node": ">=20.0.0"
   },
   "volta": {
-    "node": "20.19.4"
+    "node": "24.14.1"
   }
 }
