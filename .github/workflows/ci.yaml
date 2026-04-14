@@ -73,7 +73,31 @@ jobs:
         if: ${{ steps.nodejs-cache.outputs.cache-hit != 'true' }}
         run: npm ci --no-audit
       - name: Lint
-        run: npm run lint:ci
+        run: npm run lint
+
+  format:
+    name: 'Format'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 2
+      - name: Setup Node environment
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version-file: 'package.json'
+      - name: Cache NodeJS dependencies
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        id: nodejs-cache
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-${{ runner.arch }}-npm-${{ hashFiles('./package-lock.json') }}
+      - name: Install NodeJS dependencies
+        if: ${{ steps.nodejs-cache.outputs.cache-hit != 'true' }}
+        run: npm ci --no-audit
+      - name: Lint
+        run: npm run fmt:check
 
   build:
     name: 'Build'

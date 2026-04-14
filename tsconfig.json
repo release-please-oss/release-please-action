@@ -4,7 +4,8 @@
     "allowSyntheticDefaultImports": true,
     "rootDir": ".",
     "outDir": "build",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "strictNullChecks": true
   },
   "include": ["src/*.ts", "src/**/*.ts", "test/*.ts", "test/**/*.ts", "system-test/*.ts"],
   "exclude": ["src/*.spec.ts", "src/**/*.spec.ts"]
