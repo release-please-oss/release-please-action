@@ -5,7 +5,7 @@ export default defineConfig({
   bracketSameLine: false,
   bracketSpacing: true,
   endOfLine: 'lf',
-  ignorePatterns: ['dist/**/*', 'coverage/**/*', 'build/**/*'],
+  ignorePatterns: ['dist/**/*'],
   jsxSingleQuote: false,
   printWidth: 120,
   quoteProps: 'as-needed',
