@@ -18,6 +18,10 @@
       "enabled": false
     },
     {
+      "matchPackageNames": ["node", "@types/node"],
+      "versioning": "node"
+    },
+    {
       "groupName": "npm dependencies",
       "matchManagers": ["npm"],
       "addLabels": ["npm"]
