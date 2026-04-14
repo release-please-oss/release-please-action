@@ -1,13 +1,9 @@
 import { defineConfig } from 'oxlint';
-import core from 'ultracite/oxlint/core';
-import jest from 'ultracite/oxlint/jest';
-import vitest from 'ultracite/oxlint/vitest';
 
 export default defineConfig({
-  extends: [
-    core,
-    // vitest,
-    jest,
-  ],
+  categories: {
+    correctness: 'error',
+  },
   ignorePatterns: ['dist/**/*', 'coverage/**/*', 'build/**/*'],
+  plugins: ['import', 'typescript', 'oxc', 'import', 'node', 'promise', 'jest', 'unicorn'],
 });
