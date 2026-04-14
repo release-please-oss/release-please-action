@@ -12,6 +12,12 @@
       "addLabels": ["github-actions", "no-release"]
     },
     {
+      "matchPackageNames": ["release-please-oss/**"],
+      "matchManagers": ["github-actions"],
+      "pinDigests": false,
+      "enabled": false
+    },
+    {
       "groupName": "npm dependencies",
       "matchManagers": ["npm"],
       "addLabels": ["npm"]
