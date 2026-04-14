@@ -5,6 +5,7 @@
     "emitDeclarationOnly": true,
     "importHelpers": true,
     "isolatedModules": true,
+    "strictNullChecks": true,
     "lib": ["es2024", "ESNext.Array", "ESNext.Collection", "ESNext.Iterator", "ESNext.Promise"],
     "module": "es2022",
     "moduleResolution": "bundler",
@@ -15,7 +16,6 @@
     "noUnusedLocals": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "es2024",
-    "customConditions": ["development"]
+    "target": "es2024"
   }
 }
