@@ -30,12 +30,12 @@
     "build": "rolldown -c"
   },
   "dependencies": {
-    "@actions/core": "^1.10.0",
+    "@actions/core": "^3.0.0",
     "release-please": "^17.1.3"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
-    "@types/node": "^24.12.2",
+    "@types/node": "^25.0.0",
     "jest": "^30.0.5",
     "jest-junit": "^16.0.0",
     "lefthook": "^2.1.5",
@@ -45,7 +45,7 @@
     "rolldown": "^1.0.0-rc.15",
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.0",
     "ultracite": "^7.5.8"
   },
   "engines": {
