@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Generate GitHub token
-        uses: actions/create-github-app-token@v2.1.1
+        uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
         id: token
         with:
           app-id: ${{ secrets.RELEASE_PLEASE_OSS_BOT_APP_ID }}
@@ -65,7 +65,7 @@ jobs:
               ]
             }
       - name: Checkout sources
-        uses: actions/checkout@v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           token: ${{ steps.token.outputs.token }}
       - name: Tag major and minor versions
