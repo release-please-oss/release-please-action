@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.3.2](https://github.com/release-please-oss/release-please-action/compare/v5.3.1...v5.3.2) (2026-04-14)
+
+
+### Miscellaneous Chores
+
+* **deps:** update codecov/test-results-action action to v1.2.1 ([#29](https://github.com/release-please-oss/release-please-action/issues/29)) ([a79de12](https://github.com/release-please-oss/release-please-action/commit/a79de12ce5db9d60ee46f61cf8426038e54bb04e))
+* **deps:** update github-actions (major) ([#27](https://github.com/release-please-oss/release-please-action/issues/27)) ([acf6992](https://github.com/release-please-oss/release-please-action/commit/acf6992a5030cec94baa26db40fdc3b9ba22ee40))
+
 ## [5.3.1](https://github.com/release-please-oss/release-please-action/compare/v5.3.0...v5.3.1) (2025-10-09)
 
 
