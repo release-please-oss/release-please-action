@@ -1,7 +1,7 @@
 import * as core from '@actions/core';
 import * as nock from 'nock';
 import { GitHub, Manifest } from 'release-please';
-import * as action from '../src/index';
+import * as action from './main';
 
 const DEFAULT_INPUTS: Record<string, string> = {
   token: 'fake-token',

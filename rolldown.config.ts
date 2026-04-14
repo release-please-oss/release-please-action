@@ -5,6 +5,7 @@ export default defineConfig({
   output: {
     cleanDir: true,
     dir: 'dist',
+    sourcemap: true,
   },
   platform: 'node',
   tsconfig: './tsconfig.app.json',
