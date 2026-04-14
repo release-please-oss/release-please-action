@@ -4,6 +4,7 @@
   "addLabels": ["dependencies"],
   "minimumReleaseAge": "14",
   "rebaseWhen": "conflicted",
+  "extends": ["helpers:pinGitHubActionDigestsToSemver"],
   "packageRules": [
     {
       "groupName": "github-actions",
