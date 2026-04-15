@@ -6,7 +6,7 @@ export default defineConfig({
     clearMocks: true,
     reporters: ['default', 'github-actions', ['junit', { classNameTemplate: '{filepath}' }]],
     outputFile: {
-      junit: './build/junit',
+      junit: '../build/junit/junit.xml',
     },
     coverage: {
       enabled: true,
