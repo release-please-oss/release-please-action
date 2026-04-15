@@ -24,8 +24,7 @@
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "test2": "jest --ci --passWithNoTests=false --coverage",
-    "test": "vitest run --coverage",
+    "test": "vitest run",
     "compile": "tsc -p ./tsconfig.app.json",
     "build": "rolldown -c"
   },
@@ -35,18 +34,13 @@
     "source-map-support": "^0.5.21"
   },
   "devDependencies": {
-    "@types/jest": "^30.0.0",
     "@types/node": "^24.12.2",
     "@vitest/coverage-v8": "^4.1.4",
-    "jest": "^30.0.5",
-    "jest-junit": "^16.0.0",
     "lefthook": "^2.1.5",
     "nock": "^14.0.10",
     "oxfmt": "^0.45.0",
     "oxlint": "^1.60.0",
     "rolldown": "^1.0.0-rc.15",
-    "ts-jest": "^29.4.1",
-    "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "vitest": "^4.1.4"
   },

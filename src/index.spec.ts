@@ -70,8 +70,8 @@ describe('release-please-action', () => {
       let fromConfigStub: any;
       beforeEach(() => {
         fakeManifest = {
-          createReleases: vi.fn(),
-          createPullRequests: vi.fn(),
+          createReleases: vi.fn<() => void>(),
+          createPullRequests: vi.fn<() => void>(),
         } as any;
         fromConfigStub = vi.spyOn(Manifest, 'fromConfig').mockResolvedValue(fakeManifest);
       });
@@ -156,8 +156,8 @@ describe('release-please-action', () => {
       let fromManifestStub: any;
       beforeEach(() => {
         fakeManifest = {
-          createReleases: vi.fn(),
-          createPullRequests: vi.fn(),
+          createReleases: vi.fn<() => void>(),
+          createPullRequests: vi.fn<() => void>(),
         } as any;
         fromManifestStub = vi.spyOn(Manifest, 'fromManifest').mockResolvedValue(fakeManifest);
       });
@@ -279,8 +279,8 @@ describe('release-please-action', () => {
       let fromConfigStub: any;
       beforeEach(() => {
         const fakeManifest = {
-          createReleases: vi.fn(),
-          createPullRequests: vi.fn(),
+          createReleases: vi.fn<() => void>(),
+          createPullRequests: vi.fn<() => void>(),
         } as any;
         fakeManifest.createReleases.mockResolvedValue([]);
         fakeManifest.createPullRequests.mockResolvedValue([]);
@@ -383,8 +383,8 @@ describe('release-please-action', () => {
         'manifest-file': 'path/to/manifest.json',
       });
       const fakeManifest = {
-        createReleases: vi.fn(),
-        createPullRequests: vi.fn(),
+        createReleases: vi.fn<() => void>(),
+        createPullRequests: vi.fn<() => void>(),
       } as any;
       fakeManifest.createReleases.mockResolvedValue([]);
       fakeManifest.createPullRequests.mockResolvedValue([]);
@@ -405,8 +405,8 @@ describe('release-please-action', () => {
       });
       const createGithubSpy = vi.spyOn(GitHub, 'create');
       const fakeManifest = {
-        createReleases: vi.fn(),
-        createPullRequests: vi.fn(),
+        createReleases: vi.fn<() => void>(),
+        createPullRequests: vi.fn<() => void>(),
       } as any;
       fakeManifest.createReleases.mockResolvedValue([]);
       fakeManifest.createPullRequests.mockResolvedValue([]);
@@ -433,8 +433,8 @@ describe('release-please-action', () => {
     it('sets appropriate outputs when GitHub release created', async () => {
       mockInputs({});
       const fakeManifest = {
-        createReleases: vi.fn(),
-        createPullRequests: vi.fn(),
+        createReleases: vi.fn<() => void>(),
+        createPullRequests: vi.fn<() => void>(),
       } as any;
       fakeManifest.createReleases.mockResolvedValue([
         {
@@ -477,8 +477,8 @@ describe('release-please-action', () => {
     it('sets appropriate outputs when release PR opened', async () => {
       mockInputs({});
       const fakeManifest = {
-        createReleases: vi.fn(),
-        createPullRequests: vi.fn(),
+        createReleases: vi.fn<() => void>(),
+        createPullRequests: vi.fn<() => void>(),
       } as any;
       fakeManifest.createReleases.mockResolvedValue([]);
       fakeManifest.createPullRequests.mockResolvedValue([fixturePrs[0]]);
@@ -496,8 +496,8 @@ describe('release-please-action', () => {
     it('sets appropriate output if multiple releases are created', async () => {
       mockInputs({});
       const fakeManifest = {
-        createReleases: vi.fn(),
-        createPullRequests: vi.fn(),
+        createReleases: vi.fn<() => void>(),
+        createPullRequests: vi.fn<() => void>(),
       } as any;
       fakeManifest.createReleases.mockResolvedValue([
         {
@@ -569,8 +569,8 @@ describe('release-please-action', () => {
     it('sets appropriate output if multiple release PR opened', async () => {
       mockInputs({});
       const fakeManifest = {
-        createReleases: vi.fn(),
-        createPullRequests: vi.fn(),
+        createReleases: vi.fn<() => void>(),
+        createPullRequests: vi.fn<() => void>(),
       } as any;
       fakeManifest.createReleases.mockResolvedValue([]);
       fakeManifest.createPullRequests.mockResolvedValue(fixturePrs);
@@ -587,8 +587,8 @@ describe('release-please-action', () => {
     it('does not set outputs when no release created or PR returned', async () => {
       mockInputs({});
       const fakeManifest = {
-        createReleases: vi.fn(),
-        createPullRequests: vi.fn(),
+        createReleases: vi.fn<() => void>(),
+        createPullRequests: vi.fn<() => void>(),
       } as any;
       fakeManifest.createReleases.mockResolvedValue([]);
       fakeManifest.createPullRequests.mockResolvedValue([]);

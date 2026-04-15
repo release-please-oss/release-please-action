@@ -8,6 +8,10 @@ export default defineConfig({
     outputFile: {
       junit: '../build/junit/junit.xml',
     },
+    typecheck: {
+      enabled: true,
+      tsconfig: './tsconfig.spec.json',
+    },
     coverage: {
       enabled: true,
       provider: 'v8',
