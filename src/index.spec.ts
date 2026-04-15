@@ -1,7 +1,10 @@
 import * as core from '@actions/core';
-import * as nock from 'nock';
+import nock from 'nock';
 import { GitHub, Manifest } from 'release-please';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as action from './main';
+
+vi.mock('@actions/core');
 
 const DEFAULT_INPUTS: Record<string, string> = {
   token: 'fake-token',
@@ -32,10 +35,10 @@ process.env.GITHUB_REPOSITORY = 'fakeOwner/fakeRepo';
 
 function mockInputs(inputs: Record<string, string>): void {
   const allInputs = { ...DEFAULT_INPUTS, ...inputs };
-  jest.spyOn(core, 'getInput').mockImplementation((name: string) => {
+  vi.spyOn(core, 'getInput').mockImplementation((name: string) => {
     return allInputs[name] || '';
   });
-  jest.spyOn(core, 'getBooleanInput').mockImplementation((name: string) => {
+  vi.spyOn(core, 'getBooleanInput').mockImplementation((name: string) => {
     const value = allInputs[name] || '';
     return value.toLowerCase() === 'true';
   });
@@ -48,7 +51,7 @@ describe('release-please-action', () => {
 
   beforeEach(() => {
     output = {};
-    jest.spyOn(core, 'setOutput').mockImplementation((key: string, value: string | boolean) => {
+    vi.spyOn(core, 'setOutput').mockImplementation((key: string, value: string | boolean) => {
       output[key] = value;
     });
     // Default branch lookup:
@@ -58,19 +61,19 @@ describe('release-please-action', () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('configuration', () => {
     let fakeManifest: any;
     describe('with release-type', () => {
-      let fromConfigStub: jest.SpyInstance;
+      let fromConfigStub: any;
       beforeEach(() => {
         fakeManifest = {
-          createReleases: jest.fn(),
-          createPullRequests: jest.fn(),
+          createReleases: vi.fn<() => void>(),
+          createPullRequests: vi.fn<() => void>(),
         } as any;
-        fromConfigStub = jest.spyOn(Manifest, 'fromConfig').mockResolvedValue(fakeManifest);
+        fromConfigStub = vi.spyOn(Manifest, 'fromConfig').mockResolvedValue(fakeManifest);
       });
 
       it('builds a manifest from config', async () => {
@@ -150,13 +153,13 @@ describe('release-please-action', () => {
     });
 
     describe('with manifest', () => {
-      let fromManifestStub: jest.SpyInstance;
+      let fromManifestStub: any;
       beforeEach(() => {
         fakeManifest = {
-          createReleases: jest.fn(),
-          createPullRequests: jest.fn(),
+          createReleases: vi.fn<() => void>(),
+          createPullRequests: vi.fn<() => void>(),
         } as any;
-        fromManifestStub = jest.spyOn(Manifest, 'fromManifest').mockResolvedValue(fakeManifest);
+        fromManifestStub = vi.spyOn(Manifest, 'fromManifest').mockResolvedValue(fakeManifest);
       });
 
       it('loads a manifest from the repository', async () => {
@@ -273,15 +276,15 @@ describe('release-please-action', () => {
     });
 
     describe('config-overrides-json', () => {
-      let fromConfigStub: jest.SpyInstance;
+      let fromConfigStub: any;
       beforeEach(() => {
         const fakeManifest = {
-          createReleases: jest.fn(),
-          createPullRequests: jest.fn(),
+          createReleases: vi.fn<() => void>(),
+          createPullRequests: vi.fn<() => void>(),
         } as any;
         fakeManifest.createReleases.mockResolvedValue([]);
         fakeManifest.createPullRequests.mockResolvedValue([]);
-        fromConfigStub = jest.spyOn(Manifest, 'fromConfig').mockResolvedValue(fakeManifest);
+        fromConfigStub = vi.spyOn(Manifest, 'fromConfig').mockResolvedValue(fakeManifest);
       });
 
       it('parses valid JSON config overrides', async () => {
@@ -380,12 +383,12 @@ describe('release-please-action', () => {
         'manifest-file': 'path/to/manifest.json',
       });
       const fakeManifest = {
-        createReleases: jest.fn(),
-        createPullRequests: jest.fn(),
+        createReleases: vi.fn<() => void>(),
+        createPullRequests: vi.fn<() => void>(),
       } as any;
       fakeManifest.createReleases.mockResolvedValue([]);
       fakeManifest.createPullRequests.mockResolvedValue([]);
-      const fromManifestStub = jest.spyOn(Manifest, 'fromManifest').mockResolvedValue(fakeManifest);
+      const fromManifestStub = vi.spyOn(Manifest, 'fromManifest').mockResolvedValue(fakeManifest);
       await action.main();
       expect(fakeManifest.createReleases).toHaveBeenCalledTimes(1);
       expect(fakeManifest.createPullRequests).toHaveBeenCalledTimes(1);
@@ -400,14 +403,14 @@ describe('release-please-action', () => {
         'github-api-url': 'https://my-enterprise-host.local/api',
         'github-graphql-url': 'https://my-enterprise-host.local/graphql',
       });
-      const createGithubSpy = jest.spyOn(GitHub, 'create');
+      const createGithubSpy = vi.spyOn(GitHub, 'create');
       const fakeManifest = {
-        createReleases: jest.fn(),
-        createPullRequests: jest.fn(),
+        createReleases: vi.fn<() => void>(),
+        createPullRequests: vi.fn<() => void>(),
       } as any;
       fakeManifest.createReleases.mockResolvedValue([]);
       fakeManifest.createPullRequests.mockResolvedValue([]);
-      jest.spyOn(Manifest, 'fromManifest').mockResolvedValue(fakeManifest);
+      vi.spyOn(Manifest, 'fromManifest').mockResolvedValue(fakeManifest);
       await action.main();
       expect(fakeManifest.createReleases).toHaveBeenCalledTimes(1);
       expect(fakeManifest.createPullRequests).toHaveBeenCalledTimes(1);
@@ -430,8 +433,8 @@ describe('release-please-action', () => {
     it('sets appropriate outputs when GitHub release created', async () => {
       mockInputs({});
       const fakeManifest = {
-        createReleases: jest.fn(),
-        createPullRequests: jest.fn(),
+        createReleases: vi.fn<() => void>(),
+        createPullRequests: vi.fn<() => void>(),
       } as any;
       fakeManifest.createReleases.mockResolvedValue([
         {
@@ -452,7 +455,7 @@ describe('release-please-action', () => {
         },
       ]);
       fakeManifest.createPullRequests.mockResolvedValue([]);
-      jest.spyOn(Manifest, 'fromManifest').mockResolvedValue(fakeManifest);
+      vi.spyOn(Manifest, 'fromManifest').mockResolvedValue(fakeManifest);
       await action.main();
       expect(fakeManifest.createReleases).toHaveBeenCalledTimes(1);
       expect(fakeManifest.createPullRequests).toHaveBeenCalledTimes(1);
@@ -474,12 +477,12 @@ describe('release-please-action', () => {
     it('sets appropriate outputs when release PR opened', async () => {
       mockInputs({});
       const fakeManifest = {
-        createReleases: jest.fn(),
-        createPullRequests: jest.fn(),
+        createReleases: vi.fn<() => void>(),
+        createPullRequests: vi.fn<() => void>(),
       } as any;
       fakeManifest.createReleases.mockResolvedValue([]);
       fakeManifest.createPullRequests.mockResolvedValue([fixturePrs[0]]);
-      jest.spyOn(Manifest, 'fromManifest').mockResolvedValue(fakeManifest);
+      vi.spyOn(Manifest, 'fromManifest').mockResolvedValue(fakeManifest);
       await action.main();
       expect(fakeManifest.createReleases).toHaveBeenCalledTimes(1);
       expect(fakeManifest.createPullRequests).toHaveBeenCalledTimes(1);
@@ -493,8 +496,8 @@ describe('release-please-action', () => {
     it('sets appropriate output if multiple releases are created', async () => {
       mockInputs({});
       const fakeManifest = {
-        createReleases: jest.fn(),
-        createPullRequests: jest.fn(),
+        createReleases: vi.fn<() => void>(),
+        createPullRequests: vi.fn<() => void>(),
       } as any;
       fakeManifest.createReleases.mockResolvedValue([
         {
@@ -531,7 +534,7 @@ describe('release-please-action', () => {
         },
       ]);
       fakeManifest.createPullRequests.mockResolvedValue([]);
-      jest.spyOn(Manifest, 'fromManifest').mockResolvedValue(fakeManifest);
+      vi.spyOn(Manifest, 'fromManifest').mockResolvedValue(fakeManifest);
       await action.main();
       expect(fakeManifest.createReleases).toHaveBeenCalledTimes(1);
 
@@ -566,12 +569,12 @@ describe('release-please-action', () => {
     it('sets appropriate output if multiple release PR opened', async () => {
       mockInputs({});
       const fakeManifest = {
-        createReleases: jest.fn(),
-        createPullRequests: jest.fn(),
+        createReleases: vi.fn<() => void>(),
+        createPullRequests: vi.fn<() => void>(),
       } as any;
       fakeManifest.createReleases.mockResolvedValue([]);
       fakeManifest.createPullRequests.mockResolvedValue(fixturePrs);
-      jest.spyOn(Manifest, 'fromManifest').mockResolvedValue(fakeManifest);
+      vi.spyOn(Manifest, 'fromManifest').mockResolvedValue(fakeManifest);
       await action.main();
       expect(fakeManifest.createReleases).toHaveBeenCalledTimes(1);
       expect(fakeManifest.createPullRequests).toHaveBeenCalledTimes(1);
@@ -584,12 +587,12 @@ describe('release-please-action', () => {
     it('does not set outputs when no release created or PR returned', async () => {
       mockInputs({});
       const fakeManifest = {
-        createReleases: jest.fn(),
-        createPullRequests: jest.fn(),
+        createReleases: vi.fn<() => void>(),
+        createPullRequests: vi.fn<() => void>(),
       } as any;
       fakeManifest.createReleases.mockResolvedValue([]);
       fakeManifest.createPullRequests.mockResolvedValue([]);
-      jest.spyOn(Manifest, 'fromManifest').mockResolvedValue(fakeManifest);
+      vi.spyOn(Manifest, 'fromManifest').mockResolvedValue(fakeManifest);
       await action.main();
       expect(fakeManifest.createReleases).toHaveBeenCalledTimes(1);
       expect(fakeManifest.createPullRequests).toHaveBeenCalledTimes(1);

@@ -5,5 +5,5 @@ export default defineConfig({
     correctness: 'error',
   },
   ignorePatterns: ['dist/**/*', 'coverage/**/*', 'build/**/*'],
-  plugins: ['import', 'typescript', 'oxc', 'import', 'node', 'promise', 'jest', 'unicorn'],
+  plugins: ['import', 'typescript', 'oxc', 'import', 'node', 'promise', 'vitest', 'unicorn'],
 });
