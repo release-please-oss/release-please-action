@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import * as core from '@actions/core';
 import nock from 'nock';
 import { GitHub, Manifest } from 'release-please';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as action from './main';
 
 vi.mock('@actions/core');
@@ -67,7 +67,7 @@ describe('release-please-action', () => {
   describe('configuration', () => {
     let fakeManifest: any;
     describe('with release-type', () => {
-      let fromConfigStub: vi.SpyInstance;
+      let fromConfigStub: any;
       beforeEach(() => {
         fakeManifest = {
           createReleases: vi.fn(),
@@ -153,7 +153,7 @@ describe('release-please-action', () => {
     });
 
     describe('with manifest', () => {
-      let fromManifestStub: vi.SpyInstance;
+      let fromManifestStub: any;
       beforeEach(() => {
         fakeManifest = {
           createReleases: vi.fn(),
@@ -276,7 +276,7 @@ describe('release-please-action', () => {
     });
 
     describe('config-overrides-json', () => {
-      let fromConfigStub: vi.SpyInstance;
+      let fromConfigStub: any;
       beforeEach(() => {
         const fakeManifest = {
           createReleases: vi.fn(),

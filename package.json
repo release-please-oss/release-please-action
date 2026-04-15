@@ -24,8 +24,8 @@
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "test": "jest --ci --passWithNoTests=false --coverage",
-    "test2": "vitest run --coverage",
+    "test2": "jest --ci --passWithNoTests=false --coverage",
+    "test": "vitest run --coverage",
     "compile": "tsc -p ./tsconfig.app.json",
     "build": "rolldown -c"
   },

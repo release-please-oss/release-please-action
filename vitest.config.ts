@@ -1,14 +1,20 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    root: "src",
+    root: 'src',
     clearMocks: true,
+    reporters: ['default', 'github-actions', ['junit', { classNameTemplate: '{filepath}' }]],
+    outputFile: {
+      junit: './build/junit',
+    },
     coverage: {
-      provider: "v8",
-      include: ["**/*.ts"],
-      exclude: ["**/*.d.ts"],
-      reportsDirectory: "../coverage",
+      enabled: true,
+      provider: 'v8',
+      reporter: ['text', 'json'],
+      include: ['**/*.ts'],
+      exclude: ['**/*.d.ts'],
+      reportsDirectory: '../coverage',
     },
   },
 });
