@@ -25,6 +25,7 @@
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "test": "jest --ci --passWithNoTests=false --coverage",
+    "test2": "vitest run --coverage",
     "compile": "tsc -p ./tsconfig.app.json",
     "build": "rolldown -c"
   },
@@ -36,6 +37,7 @@
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "@types/node": "^24.12.2",
+    "@vitest/coverage-v8": "^4.1.4",
     "jest": "^30.0.5",
     "jest-junit": "^16.0.0",
     "lefthook": "^2.1.5",
@@ -45,7 +47,8 @@
     "rolldown": "^1.0.0-rc.15",
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.4"
   },
   "engines": {
     "node": ">=24.0.0"
