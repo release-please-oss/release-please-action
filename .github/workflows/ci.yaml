@@ -27,15 +27,10 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version-file: 'package.json'
-      - name: Cache NodeJS dependencies
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        id: nodejs-cache
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-${{ runner.arch }}-npm-${{ hashFiles('./package-lock.json') }}
+          cache: 'npm'
+          package-manager-cache: true
       - name: Install NodeJS dependencies
-        if: ${{ steps.nodejs-cache.outputs.cache-hit != 'true' }}
-        run: npm ci --no-audit
+        run: npm ci --prefer-offline --no-audit --ignore-scripts --silent
       - name: Run tests
         run: npm run test
       - name: Upload test coverage to Codecov
@@ -65,15 +60,10 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version-file: 'package.json'
-      - name: Cache NodeJS dependencies
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        id: nodejs-cache
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-${{ runner.arch }}-npm-${{ hashFiles('./package-lock.json') }}
+          cache: 'npm'
+          package-manager-cache: true
       - name: Install NodeJS dependencies
-        if: ${{ steps.nodejs-cache.outputs.cache-hit != 'true' }}
-        run: npm ci --no-audit
+        run: npm ci --prefer-offline --no-audit --ignore-scripts --silent
       - name: Lint
         run: npm run lint
 
@@ -89,15 +79,10 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version-file: 'package.json'
-      - name: Cache NodeJS dependencies
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        id: nodejs-cache
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-${{ runner.arch }}-npm-${{ hashFiles('./package-lock.json') }}
+          cache: 'npm'
+          package-manager-cache: true
       - name: Install NodeJS dependencies
-        if: ${{ steps.nodejs-cache.outputs.cache-hit != 'true' }}
-        run: npm ci --no-audit
+        run: npm ci --prefer-offline --no-audit --ignore-scripts --silent
       - name: Format
         run: npm run fmt:check
 
@@ -111,14 +96,9 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version-file: 'package.json'
-      - name: Cache NodeJS dependencies
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        id: nodejs-cache
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-${{ runner.arch }}-npm-${{ hashFiles('./package-lock.json') }}
+          cache: 'npm'
+          package-manager-cache: true
       - name: Install NodeJS dependencies
-        if: ${{ steps.nodejs-cache.outputs.cache-hit != 'true' }}
-        run: npm ci --no-audit
+        run: npm ci --prefer-offline --no-audit --ignore-scripts --silent
       - name: Run build
         run: npm run build
