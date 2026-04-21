@@ -2,6 +2,7 @@
 
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 [![codecov](https://codecov.io/github/release-please-oss/release-please-action/graph/badge.svg?token=VU1EVUQRAW)](https://codecov.io/github/release-please-oss/release-please-action)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/release-please-oss/release-please-action/badge)](https://scorecard.dev/viewer/?uri=github.com/release-please-oss/release-please-action)
 
 Automate releases with Conventional Commit Messages.
 
