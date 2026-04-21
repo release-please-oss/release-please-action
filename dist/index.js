@@ -83238,14 +83238,12 @@ function loadOrBuildManifest(github, inputs) {
 async function main() {
 	info(`Running release-please version: ${import_src.VERSION}`);
 	const inputs = parseInputs();
-	const github = await getGitHubInstance(inputs);
+	const manifest = await loadOrBuildManifest(await getGitHubInstance(inputs), inputs);
 	if (!inputs.skipGitHubRelease) {
-		const manifest = await loadOrBuildManifest(github, inputs);
 		debug("Creating releases");
 		outputReleases(await manifest.createReleases());
 	}
 	if (!inputs.skipGitHubPullRequest) {
-		const manifest = await loadOrBuildManifest(github, inputs);
 		debug("Creating pull requests");
 		outputPRs(await manifest.createPullRequests());
 	}
