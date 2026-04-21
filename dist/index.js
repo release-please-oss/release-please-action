@@ -21,7 +21,7 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __commonJSMin = (cb, mod) => () => (mod || cb((mod = { exports: {} }).exports, mod), mod.exports);
+var __commonJSMin = (cb, mod) => () => (mod || (cb((mod = { exports: {} }).exports, mod), cb = null), mod.exports);
 var __copyProps = (to, from, except, desc) => {
 	if (from && typeof from === "object" || typeof from === "function") for (var keys = __getOwnPropNames(from), i = 0, n = keys.length, key; i < n; i++) {
 		key = keys[i];
@@ -6855,11 +6855,14 @@ var require_file = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const { webidl } = require_webidl();
 	var FileLike = class FileLike {
 		constructor(blobLike, fileName, options = {}) {
+			const n = fileName;
+			const t = options.type;
+			const d = options.lastModified ?? Date.now();
 			this[kState] = {
 				blobLike,
-				name: fileName,
-				type: options.type,
-				lastModified: options.lastModified ?? Date.now()
+				name: n,
+				type: t,
+				lastModified: d
 			};
 		}
 		stream(...args) {
@@ -25187,9 +25190,12 @@ var require_commit_split = /* @__PURE__ */ __commonJSMin(((exports) => {
 		constructor(opts) {
 			opts = opts || {};
 			this.includeEmpty = !!opts.includeEmpty;
-			if (opts.packagePaths) this.packagePaths = (0, commit_utils_1.normalizePaths)(opts.packagePaths).filter((path) => {
-				return path !== manifest_1.ROOT_PROJECT_PATH;
-			}).sort((a, b) => b.length - a.length);
+			if (opts.packagePaths) {
+				const paths = (0, commit_utils_1.normalizePaths)(opts.packagePaths);
+				this.packagePaths = paths.filter((path) => {
+					return path !== manifest_1.ROOT_PROJECT_PATH;
+				}).sort((a, b) => b.length - a.length);
+			}
 		}
 		/**
 		* Split commits by component path. If the commit splitter is configured
@@ -29210,7 +29216,8 @@ var require_whitespace_control = /* @__PURE__ */ __commonJSMin(((exports, module
 	}
 	var _visitor2 = _interopRequireDefault(require_visitor());
 	function WhitespaceControl() {
-		this.options = arguments.length <= 0 || arguments[0] === void 0 ? {} : arguments[0];
+		var options = arguments.length <= 0 || arguments[0] === void 0 ? {} : arguments[0];
+		this.options = options;
 	}
 	WhitespaceControl.prototype = new _visitor2["default"]();
 	WhitespaceControl.prototype.Program = function(program) {
@@ -43409,7 +43416,8 @@ var require_html = /* @__PURE__ */ __commonJSMin(((exports) => {
 		* @param {HTMLElement} newNode     new node
 		*/
 		HTMLElement.prototype.exchangeChild = function(oldNode, newNode) {
-			this.childNodes = this.childNodes.map(function(child) {
+			var children = this.childNodes;
+			this.childNodes = children.map(function(child) {
 				if (child === oldNode) return newNode;
 				return child;
 			});
@@ -43454,7 +43462,8 @@ var require_html = /* @__PURE__ */ __commonJSMin(((exports) => {
 				return decode(this.rawText);
 			},
 			set: function(val) {
-				this.childNodes = [new text_1.default(val, this)];
+				var content = [new text_1.default(val, this)];
+				this.childNodes = content;
 			},
 			enumerable: false,
 			configurable: true
@@ -81041,7 +81050,8 @@ var require_commonjs = /* @__PURE__ */ __commonJSMin(((exports) => {
 			this.pattern = pattern;
 			this.platform = options.platform || defaultPlatform;
 			this.isWindows = this.platform === "win32";
-			this.windowsPathsNoEscape = !!options.windowsPathsNoEscape || options["allowWindowsEscape"] === false;
+			const awe = "allowWindowsEscape";
+			this.windowsPathsNoEscape = !!options.windowsPathsNoEscape || options[awe] === false;
 			if (this.windowsPathsNoEscape) this.pattern = this.pattern.replace(/\\/g, "/");
 			this.preserveMultipleSlashes = !!options.preserveMultipleSlashes;
 			this.regexp = null;
