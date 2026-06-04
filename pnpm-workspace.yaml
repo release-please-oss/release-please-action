@@ -1,0 +1,13 @@
+blockExoticSubdeps: true
+trustPolicy: no-downgrade
+trustPolicyExclude:
+  - ast-v8-to-istanbul
+  - tinyexec
+  - semver
+  - '@octokit/endpoint'
+# 7 days
+minimumReleaseAge: 10080
+minimumReleaseAgeExclude:
+  - 'release-please'
+allowBuilds:
+  lefthook: true

@@ -1,6 +1,6 @@
 pre-commit:
   jobs:
-    - run: npm run lint
+    - run: pnpm run lint
       glob:
         - '**/*.js'
         - '**/*.jsx'
@@ -10,7 +10,7 @@ pre-commit:
         - '**/*.jsonc'
         - '**/*.css'
       stage_fixed: true
-    - run: npm run fmt:check
+    - run: pnpm run fmt:check
       glob:
         - '**/*.js'
         - '**/*.jsx'
