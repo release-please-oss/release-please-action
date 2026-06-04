@@ -11,18 +11,25 @@ on:
     branches:
       - main
 
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     name: 'Test'
     runs-on: ubuntu-24.04
     permissions:
-      id-token: write
+      id-token: write # For Codecov uploads
       contents: read
     steps:
       - name: Checkout sources
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 2
+          persist-credentials: 'false'
       - name: Install pnpm
         uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
       - name: Setup Node environment
@@ -53,11 +60,14 @@ jobs:
   lint:
     name: 'Lint'
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     steps:
       - name: Checkout sources
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 2
+          persist-credentials: 'false'
       - name: Install pnpm
         uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
       - name: Setup Node environment
@@ -74,11 +84,14 @@ jobs:
   format:
     name: 'Format'
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     steps:
       - name: Checkout sources
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 2
+          persist-credentials: 'false'
       - name: Install pnpm
         uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
       - name: Setup Node environment
@@ -95,9 +108,13 @@ jobs:
   build:
     name: 'Build'
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     steps:
       - name: Checkout sources
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: 'false'
       - name: Install pnpm
         uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
       - name: Setup Node environment

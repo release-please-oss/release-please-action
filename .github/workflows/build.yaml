@@ -5,13 +5,30 @@ on:
     branches:
       - main
 
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build-dist:
     name: 'Build dist'
     runs-on: ubuntu-24.04
     steps:
+      - name: Generate GitHub token
+        uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
+        id: token
+        with:
+          client-id: ${{ secrets.RELEASE_PLEASE_OSS_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_PLEASE_OSS_BOT_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
       - name: Checkout sources
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          token: ${{ steps.token.outputs.token }}
+          persist-credentials: 'false'
       - name: Install pnpm
         uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
       - name: Setup Node environment
@@ -24,13 +41,8 @@ jobs:
         run: pnpm install --no-runtime --prefer-offline --frozen-lockfile
       - name: Run build
         run: pnpm run build
-      - name: Generate GitHub token
-        uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
-        id: token
-        with:
-          client-id: ${{ secrets.RELEASE_PLEASE_OSS_BOT_CLIENT_ID }}
-          private-key: ${{ secrets.RELEASE_PLEASE_OSS_BOT_PRIVATE_KEY }}
       - name: Create Pull Request
+        # zizmor: ignore[superfluous-actions]
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           token: ${{ steps.token.outputs.token }}
