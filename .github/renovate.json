@@ -2,7 +2,8 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "dependencyDashboardApproval": true,
   "addLabels": ["dependencies"],
-  "minimumReleaseAge": "14",
+  "minimumReleaseAge": "7 days",
+  "minimumReleaseAgeBehaviour": "timestamp-optional",
   "rebaseWhen": "conflicted",
   "extends": ["helpers:pinGitHubActionDigestsToSemver"],
   "packageRules": [
