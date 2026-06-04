@@ -6,6 +6,12 @@ on:
       - main
   workflow_dispatch:
 
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   release:
     name: 'Release'
@@ -17,8 +23,11 @@ jobs:
         with:
           client-id: ${{ secrets.RELEASE_PLEASE_OSS_BOT_CLIENT_ID }}
           private-key: ${{ secrets.RELEASE_PLEASE_OSS_BOT_PRIVATE_KEY }}
+          permission-contents: write
+          permission-issues: write
+          permission-pull-requests: write
       - name: Release Please
-        uses: release-please-oss/release-please-action@main
+        uses: release-please-oss/release-please-action@main # zizmor: ignore[unpinned-uses]
         id: release
         with:
           token: ${{ steps.token.outputs.token }}
@@ -68,17 +77,23 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           token: ${{ steps.token.outputs.token }}
+          persist-credentials: 'true'
       - name: Tag major and minor versions
         if: ${{ steps.release.outputs.release_created }}
+        env:
+          MAJOR: ${{ steps.release.outputs.major }}
+          MINOR: ${{ steps.release.outputs.minor }}
+          GIT_USER_NAME: ${{ secrets.RELEASE_PLEASE_OSS_BOT_GIT_NAME }}
+          GIT_USER_EMAIL: ${{ secrets.RELEASE_PLEASE_OSS_BOT_GIT_EMAIL }}
+        # language=bash
         run: |
-          git config user.name ${{ secrets.RELEASE_PLEASE_OSS_BOT_GIT_NAME }}
-          git config user.email ${{ secrets.RELEASE_PLEASE_OSS_BOT_GIT_EMAIL }}
-          git remote add gh-token "https://${{ secrets.GITHUB_TOKEN}}@github.com/release-please-oss/release-please-action.git"
-          git tag -d v${{ steps.release.outputs.major }} || true
-          git tag -d v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
-          git push origin :v${{ steps.release.outputs.major }} || true
-          git push origin :v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
-          git tag -a v${{ steps.release.outputs.major }} -m "Release v${{ steps.release.outputs.major }}"
-          git tag -a v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} -m "Release v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}"
-          git push origin v${{ steps.release.outputs.major }}
-          git push origin v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}
+          git config user.name "${GIT_USER_NAME}"
+          git config user.email "${GIT_USER_EMAIL}"
+          git tag -d "v${MAJOR}" || true
+          git tag -d "v${MAJOR}.${MINOR}" || true
+          git push origin ":v${MAJOR}" || true
+          git push origin ":v${MAJOR}.${MINOR}" || true
+          git tag -a "v${MAJOR}" -m "Release v${MAJOR}"
+          git tag -a "v${MAJOR}.${MINOR}" -m "Release v${MAJOR}.${MINOR}"
+          git push origin "v${MAJOR}"
+          git push origin "v${MAJOR}.${MINOR}"

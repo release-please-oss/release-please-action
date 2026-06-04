@@ -1,4 +1,4 @@
-name: Scorecard analysis workflow
+name: 'Scorecard analysis workflow'
 
 on:
   push:
@@ -7,15 +7,23 @@ on:
   schedule:
     - cron: '30 1 * * 1'
 
-permissions: read-all
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
 
 jobs:
   analysis:
     name: Scorecard analysis
     runs-on: ubuntu-24.04
     permissions:
-      security-events: write
-      id-token: write
+      security-events: write # Required when publishing results (badge / API / code scanning)
+      id-token: write # Required when publishing results (badge / API / code scanning)
+      contents: read # Recommended reads to avoid GraphQL/SAST gaps
+      issues: read # Recommended reads to avoid GraphQL/SAST gaps
+      pull-requests: read # Recommended reads to avoid GraphQL/SAST gaps
+      checks: read # Recommended reads to avoid GraphQL/SAST gaps
     steps:
       - name: Checkout sources
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
