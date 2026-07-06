@@ -6,14 +6,14 @@ export default defineConfig({
   output: {
     // Shim globals in esm bundle
     banner: `
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import * as shimPath from "path";
+import { fileURLToPath } from "node:url";
 
-const getFilename = () => fileURLToPath(import.meta.url)
-const getDirname = () => path.dirname(getFilename())
+const getFilename = () => fileURLToPath(import.meta.url);
+const getDirname = () => shimPath.dirname(getFilename());
 
-export const __dirname = /* @__PURE__ */ getDirname()
-export const __filename = /* @__PURE__ */ getFilename()
+export const __dirname = /* @__PURE__ */ getDirname();
+export const __filename = /* @__PURE__ */ getFilename();
     `,
     cleanDir: false,
     dir: 'dist',
