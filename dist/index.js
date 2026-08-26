@@ -32,7 +32,7 @@ var __copyProps = (to, from, except, desc) => {
 	}
 	return to;
 };
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", {
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule || !__hasOwnProp.call(mod, "default") ? __defProp(target, "default", {
 	value: mod,
 	enumerable: true
 }) : target, mod));
@@ -204,12 +204,14 @@ var require_util$10 = /* @__PURE__ */ __commonJSMin(((exports) => {
 			part = parts[i];
 			if (part === ".") parts.splice(i, 1);
 			else if (part === "..") up++;
-			else if (up > 0) if (part === "") {
-				parts.splice(i + 1, up);
-				up = 0;
-			} else {
-				parts.splice(i, 2);
-				up--;
+			else if (up > 0) {
+				if (part === "") {
+					parts.splice(i + 1, up);
+					up = 0;
+				} else {
+					parts.splice(i, 2);
+					up--;
+				}
 			}
 		}
 		path = parts.join("/");
@@ -461,8 +463,10 @@ var require_array_set = /* @__PURE__ */ __commonJSMin(((exports) => {
 		var isDuplicate = hasNativeMap ? this.has(aStr) : has.call(this._set, sStr);
 		var idx = this._array.length;
 		if (!isDuplicate || aAllowDuplicates) this._array.push(aStr);
-		if (!isDuplicate) if (hasNativeMap) this._set.set(aStr, idx);
-		else this._set[sStr] = idx;
+		if (!isDuplicate) {
+			if (hasNativeMap) this._set.set(aStr, idx);
+			else this._set[sStr] = idx;
+		}
 	};
 	/**
 	* Is the given string a member of this set?
@@ -1778,18 +1782,20 @@ var require_source_node = /* @__PURE__ */ __commonJSMin(((exports) => {
 		var lastGeneratedLine = 1, lastGeneratedColumn = 0;
 		var lastMapping = null;
 		aSourceMapConsumer.eachMapping(function(mapping) {
-			if (lastMapping !== null) if (lastGeneratedLine < mapping.generatedLine) {
-				addMappingWithCode(lastMapping, shiftNextLine());
-				lastGeneratedLine++;
-				lastGeneratedColumn = 0;
-			} else {
-				var nextLine = remainingLines[remainingLinesIndex] || "";
-				var code = nextLine.substr(0, mapping.generatedColumn - lastGeneratedColumn);
-				remainingLines[remainingLinesIndex] = nextLine.substr(mapping.generatedColumn - lastGeneratedColumn);
-				lastGeneratedColumn = mapping.generatedColumn;
-				addMappingWithCode(lastMapping, code);
-				lastMapping = mapping;
-				return;
+			if (lastMapping !== null) {
+				if (lastGeneratedLine < mapping.generatedLine) {
+					addMappingWithCode(lastMapping, shiftNextLine());
+					lastGeneratedLine++;
+					lastGeneratedColumn = 0;
+				} else {
+					var nextLine = remainingLines[remainingLinesIndex] || "";
+					var code = nextLine.substr(0, mapping.generatedColumn - lastGeneratedColumn);
+					remainingLines[remainingLinesIndex] = nextLine.substr(mapping.generatedColumn - lastGeneratedColumn);
+					lastGeneratedColumn = mapping.generatedColumn;
+					addMappingWithCode(lastMapping, code);
+					lastMapping = mapping;
+					return;
+				}
 			}
 			while (lastGeneratedLine < mapping.generatedLine) {
 				node.add(shiftNextLine());
@@ -3306,20 +3312,22 @@ var require_tree = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			while (true) {
 				const code = key.charCodeAt(index);
 				if (code > 127) throw new TypeError("key must be ascii string");
-				if (node.code === code) if (length === ++index) {
-					node.value = value;
-					break;
-				} else if (node.middle !== null) node = node.middle;
-				else {
-					node.middle = new TstNode(key, value, index);
-					break;
-				}
-				else if (node.code < code) if (node.left !== null) node = node.left;
-				else {
-					node.left = new TstNode(key, value, index);
-					break;
-				}
-				else if (node.right !== null) node = node.right;
+				if (node.code === code) {
+					if (length === ++index) {
+						node.value = value;
+						break;
+					} else if (node.middle !== null) node = node.middle;
+					else {
+						node.middle = new TstNode(key, value, index);
+						break;
+					}
+				} else if (node.code < code) {
+					if (node.left !== null) node = node.left;
+					else {
+						node.left = new TstNode(key, value, index);
+						break;
+					}
+				} else if (node.right !== null) node = node.right;
 				else {
 					node.right = new TstNode(key, value, index);
 					break;
@@ -3994,15 +4002,16 @@ var require_request$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			if (Array.isArray(headers)) {
 				if (headers.length % 2 !== 0) throw new InvalidArgumentError("headers array must be even");
 				for (let i = 0; i < headers.length; i += 2) processHeader(this, headers[i], headers[i + 1]);
-			} else if (headers && typeof headers === "object") if (headers[Symbol.iterator]) for (const header of headers) {
-				if (!Array.isArray(header) || header.length !== 2) throw new InvalidArgumentError("headers must be in key-value pair format");
-				processHeader(this, header[0], header[1]);
-			}
-			else {
-				const keys = Object.keys(headers);
-				for (let i = 0; i < keys.length; ++i) processHeader(this, keys[i], headers[keys[i]]);
-			}
-			else if (headers != null) throw new InvalidArgumentError("headers must be an object or an array");
+			} else if (headers && typeof headers === "object") {
+				if (headers[Symbol.iterator]) for (const header of headers) {
+					if (!Array.isArray(header) || header.length !== 2) throw new InvalidArgumentError("headers must be in key-value pair format");
+					processHeader(this, header[0], header[1]);
+				}
+				else {
+					const keys = Object.keys(headers);
+					for (let i = 0; i < keys.length; ++i) processHeader(this, keys[i], headers[keys[i]]);
+				}
+			} else if (headers != null) throw new InvalidArgumentError("headers must be an object or an array");
 			validateHandler(handler, method, upgrade);
 			this.servername = servername || getServerName(this.host);
 			this[kHandler] = handler;
@@ -4214,7 +4223,7 @@ var require_dispatcher_base = /* @__PURE__ */ __commonJSMin(((exports, module) =
 			this[kWebSocketOptions] = opts?.webSocket ?? {};
 		}
 		get webSocketOptions() {
-			return { maxPayloadSize: this[kWebSocketOptions].maxPayloadSize ?? 128 * 1024 * 1024 };
+			return { maxPayloadSize: this[kWebSocketOptions].maxPayloadSize ?? 134217728 };
 		}
 		get destroyed() {
 			return this[kDestroyed];
@@ -4265,7 +4274,7 @@ var require_dispatcher_base = /* @__PURE__ */ __commonJSMin(((exports, module) =
 			}
 			if (callback === void 0) return new Promise((resolve, reject) => {
 				this.destroy(err, (err, data) => {
-					return err ? reject(err) : resolve(data);
+					return err ? /* istanbul ignore next: should never error */ reject(err) : resolve(data);
 				});
 			});
 			if (typeof callback !== "function") throw new InvalidArgumentError("invalid callback");
@@ -4735,7 +4744,7 @@ var require_connect = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 				assert$24(!httpSocket, "httpSocket can only be sent on TLS update");
 				port = port || 80;
 				socket = net$4.connect({
-					highWaterMark: 64 * 1024,
+					highWaterMark: 65536,
 					...options,
 					localAddress,
 					port,
@@ -6214,10 +6223,7 @@ var require_util$8 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 				case "strict-origin-when-cross-origin":
 					if (request.origin && urlHasHttpsScheme(request.origin) && !urlHasHttpsScheme(requestCurrentURL(request))) serializedOrigin = null;
 					break;
-				case "same-origin":
-					if (!sameOrigin(request, requestCurrentURL(request))) serializedOrigin = null;
-					break;
-				default:
+				case "same-origin": if (!sameOrigin(request, requestCurrentURL(request))) serializedOrigin = null;
 			}
 			request.headersList.append("origin", serializedOrigin, true);
 		}
@@ -6349,8 +6355,10 @@ var require_util$8 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			const algorithm = item.algo;
 			const expectedValue = item.hash;
 			let actualValue = crypto.createHash(algorithm).update(bytes).digest("base64");
-			if (actualValue[actualValue.length - 1] === "=") if (actualValue[actualValue.length - 2] === "=") actualValue = actualValue.slice(0, -2);
-			else actualValue = actualValue.slice(0, -1);
+			if (actualValue[actualValue.length - 1] === "=") {
+				if (actualValue[actualValue.length - 2] === "=") actualValue = actualValue.slice(0, -2);
+				else actualValue = actualValue.slice(0, -1);
+			}
 			if (compareBase64Mixed(actualValue, expectedValue)) return true;
 		}
 		return false;
@@ -6499,9 +6507,7 @@ var require_util$8 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 					case "value":
 						result = value;
 						break;
-					case "key+value":
-						result = [key, value];
-						break;
+					case "key+value": result = [key, value];
 				}
 				return {
 					value: result,
@@ -6795,12 +6801,14 @@ var require_util$8 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 		let temporaryValue = "";
 		while (position.position < input.length) {
 			temporaryValue += collectASequenceOfCodePoints((char) => char !== "\"" && char !== ",", input, position);
-			if (position.position < input.length) if (input.charCodeAt(position.position) === 34) {
-				temporaryValue += collectAnHTTPQuotedString(input, position);
-				if (position.position < input.length) continue;
-			} else {
-				assert$22(input.charCodeAt(position.position) === 44);
-				position.position++;
+			if (position.position < input.length) {
+				if (input.charCodeAt(position.position) === 34) {
+					temporaryValue += collectAnHTTPQuotedString(input, position);
+					if (position.position < input.length) continue;
+				} else {
+					assert$22(input.charCodeAt(position.position) === 44);
+					position.position++;
+				}
 			}
 			temporaryValue = removeChars(temporaryValue, true, true, (char) => char === 9 || char === 32);
 			values.push(temporaryValue);
@@ -7050,9 +7058,10 @@ var require_formdata = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 		}
 		[nodeUtil$2.inspect.custom](depth, options) {
 			const state = this[kState].reduce((a, b) => {
-				if (a[b.name]) if (Array.isArray(a[b.name])) a[b.name].push(b.value);
-				else a[b.name] = [a[b.name], b.value];
-				else a[b.name] = b.value;
+				if (a[b.name]) {
+					if (Array.isArray(a[b.name])) a[b.name].push(b.value);
+					else a[b.name] = [a[b.name], b.value];
+				} else a[b.name] = b.value;
 				return a;
 			}, { __proto__: null });
 			options.depth ??= depth;
@@ -7664,10 +7673,12 @@ var require_client_h1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 					timers.clearTimeout(this.timeout);
 					this.timeout = null;
 				}
-				if (delay) if (type & USE_FAST_TIMER) this.timeout = timers.setFastTimeout(onParserTimeout, delay, new WeakRef(this));
-				else {
-					this.timeout = setTimeout(onParserTimeout, delay, new WeakRef(this));
-					this.timeout.unref();
+				if (delay) {
+					if (type & USE_FAST_TIMER) this.timeout = timers.setFastTimeout(onParserTimeout, delay, new WeakRef(this));
+					else {
+						this.timeout = setTimeout(onParserTimeout, delay, new WeakRef(this));
+						this.timeout.unref();
+					}
 				}
 				this.timeoutValue = delay;
 			} else if (this.timeout) {
@@ -8155,9 +8166,10 @@ var require_client_h1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 		/* istanbul ignore else: assertion */
 		if (!body || bodyLength === 0) writeBuffer(abort, null, client, request, socket, contentLength, header, expectsPayload);
 		else if (util.isBuffer(body)) writeBuffer(abort, body, client, request, socket, contentLength, header, expectsPayload);
-		else if (util.isBlobLike(body)) if (typeof body.stream === "function") writeIterable(abort, body.stream(), client, request, socket, contentLength, header, expectsPayload);
-		else writeBlob(abort, body, client, request, socket, contentLength, header, expectsPayload);
-		else if (util.isStream(body)) writeStream(abort, body, client, request, socket, contentLength, header, expectsPayload);
+		else if (util.isBlobLike(body)) {
+			if (typeof body.stream === "function") writeIterable(abort, body.stream(), client, request, socket, contentLength, header, expectsPayload);
+			else writeBlob(abort, body, client, request, socket, contentLength, header, expectsPayload);
+		} else if (util.isStream(body)) writeStream(abort, body, client, request, socket, contentLength, header, expectsPayload);
 		else if (util.isIterable(body)) writeIterable(abort, body, client, request, socket, contentLength, header, expectsPayload);
 		else assert$19(false);
 		return true;
@@ -8219,12 +8231,13 @@ var require_client_h1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	}
 	function writeBuffer(abort, body, client, request, socket, contentLength, header, expectsPayload) {
 		try {
-			if (!body) if (contentLength === 0) socket.write(`${header}content-length: 0\r\n\r\n`, "latin1");
-			else {
-				assert$19(contentLength === null, "no body must not have content length");
-				socket.write(`${header}\r\n`, "latin1");
-			}
-			else if (util.isBuffer(body)) {
+			if (!body) {
+				if (contentLength === 0) socket.write(`${header}content-length: 0\r\n\r\n`, "latin1");
+				else {
+					assert$19(contentLength === null, "no body must not have content length");
+					socket.write(`${header}\r\n`, "latin1");
+				}
+			} else if (util.isBuffer(body)) {
 				assert$19(contentLength === body.byteLength, "buffer body must have content length");
 				socket.cork();
 				socket.write(`${header}content-length: ${contentLength}\r\n\r\n`, "latin1");
@@ -8340,11 +8353,14 @@ var require_client_h1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			socket[kWriting] = false;
 			if (socket[kError]) throw socket[kError];
 			if (socket.destroyed) return;
-			if (bytesWritten === 0) if (expectsPayload) socket.write(`${header}content-length: 0\r\n\r\n`, "latin1");
-			else socket.write(`${header}\r\n`, "latin1");
-			else if (contentLength === null) socket.write("\r\n0\r\n\r\n", "latin1");
-			if (contentLength !== null && bytesWritten !== contentLength) if (client[kStrictContentLength]) throw new RequestContentLengthMismatchError();
-			else process.emitWarning(new RequestContentLengthMismatchError());
+			if (bytesWritten === 0) {
+				if (expectsPayload) socket.write(`${header}content-length: 0\r\n\r\n`, "latin1");
+				else socket.write(`${header}\r\n`, "latin1");
+			} else if (contentLength === null) socket.write("\r\n0\r\n\r\n", "latin1");
+			if (contentLength !== null && bytesWritten !== contentLength) {
+				if (client[kStrictContentLength]) throw new RequestContentLengthMismatchError();
+				else process.emitWarning(new RequestContentLengthMismatchError());
+			}
 			if (socket[kParser].timeout && socket[kParser].timeoutType === TIMEOUT_HEADERS) {
 				// istanbul ignore else: only for jest
 				if (socket[kParser].timeout.refresh) socket[kParser].timeout.refresh();
@@ -8465,12 +8481,14 @@ var require_client_h2 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	}
 	function resumeH2(client) {
 		const socket = client[kSocket];
-		if (socket?.destroyed === false) if (client[kSize] === 0 && client[kMaxConcurrentStreams] === 0) {
-			socket.unref();
-			client[kHTTP2Session].unref();
-		} else {
-			socket.ref();
-			client[kHTTP2Session].ref();
+		if (socket?.destroyed === false) {
+			if (client[kSize] === 0 && client[kMaxConcurrentStreams] === 0) {
+				socket.unref();
+				client[kHTTP2Session].unref();
+			} else {
+				socket.ref();
+				client[kHTTP2Session].ref();
+			}
 		}
 	}
 	function onHttp2SessionError(err) {
@@ -8654,9 +8672,10 @@ var require_client_h2 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			/* istanbul ignore else: assertion */
 			if (!body || contentLength === 0) writeBuffer(abort, stream, null, client, request, client[kSocket], contentLength, expectsPayload);
 			else if (util.isBuffer(body)) writeBuffer(abort, stream, body, client, request, client[kSocket], contentLength, expectsPayload);
-			else if (util.isBlobLike(body)) if (typeof body.stream === "function") writeIterable(abort, stream, body.stream(), client, request, client[kSocket], contentLength, expectsPayload);
-			else writeBlob(abort, stream, body, client, request, client[kSocket], contentLength, expectsPayload);
-			else if (util.isStream(body)) writeStream(abort, client[kSocket], expectsPayload, stream, body, client, request, contentLength);
+			else if (util.isBlobLike(body)) {
+				if (typeof body.stream === "function") writeIterable(abort, stream, body.stream(), client, request, client[kSocket], contentLength, expectsPayload);
+				else writeBlob(abort, stream, body, client, request, client[kSocket], contentLength, expectsPayload);
+			} else if (util.isStream(body)) writeStream(abort, client[kSocket], expectsPayload, stream, body, client, request, contentLength);
 			else if (util.isIterable(body)) writeIterable(abort, stream, body, client, request, client[kSocket], contentLength, expectsPayload);
 			else assert$18(false);
 		}
@@ -9022,7 +9041,8 @@ var require_client = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			this.once("connect", cb);
 		}
 		[kDispatch](opts, handler) {
-			const request = new Request(opts.origin || this[kUrl].origin, opts, handler);
+			const origin = opts.origin || this[kUrl].origin;
+			const request = new Request(origin, opts, handler);
 			this[kQueue].push(request);
 			if (this[kResuming]) {} else if (util.bodyLength(request.body) == null && util.isIterable(request.body)) {
 				this[kResuming] = 1;
@@ -9233,7 +9253,7 @@ var require_client = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 //#region node_modules/.pnpm/undici@6.26.0/node_modules/undici/lib/dispatcher/fixed-queue.js
 var require_fixed_queue = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const kSize = 2048;
-	const kMask = kSize - 1;
+	const kMask = 2047;
 	var FixedCircularBuffer = class {
 		constructor() {
 			this.bottom = 0;
@@ -10018,7 +10038,7 @@ var require_retry_handler = /* @__PURE__ */ __commonJSMin(((exports, module) => 
 			this.retryOpts = {
 				retry: retryFn ?? RetryHandler[kRetryHandlerDefaultRetry],
 				retryAfter: retryAfter ?? true,
-				maxTimeout: maxTimeout ?? 30 * 1e3,
+				maxTimeout: maxTimeout ?? 3e4,
 				minTimeout: minTimeout ?? 500,
 				timeoutFactor: timeoutFactor ?? 2,
 				maxRetries: maxRetries ?? 5,
@@ -10106,13 +10126,15 @@ var require_retry_handler = /* @__PURE__ */ __commonJSMin(((exports, module) => 
 		onHeaders(statusCode, rawHeaders, resume, statusMessage) {
 			const headers = parseHeaders(rawHeaders);
 			this.retryCount += 1;
-			if (statusCode >= 300) if (this.retryOpts.statusCodes.includes(statusCode) === false) return this.handler.onHeaders(statusCode, rawHeaders, resume, statusMessage);
-			else {
-				this.abort(new RequestRetryError("Request failed", statusCode, {
-					headers,
-					data: { count: this.retryCount }
-				}));
-				return false;
+			if (statusCode >= 300) {
+				if (this.retryOpts.statusCodes.includes(statusCode) === false) return this.handler.onHeaders(statusCode, rawHeaders, resume, statusMessage);
+				else {
+					this.abort(new RequestRetryError("Request failed", statusCode, {
+						headers,
+						data: { count: this.retryCount }
+					}));
+					return false;
+				}
 			}
 			if (this.resume != null) {
 				this.resume = null;
@@ -10262,7 +10284,7 @@ var require_readable = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const kContentLength = Symbol("kContentLength");
 	const noop = () => {};
 	var BodyReadable = class extends Readable$2 {
-		constructor({ resume, abort, contentType = "", contentLength, highWaterMark = 64 * 1024 }) {
+		constructor({ resume, abort, contentType = "", contentLength, highWaterMark = 65536 }) {
 			super({
 				autoDestroy: true,
 				read: resume,
@@ -10341,7 +10363,7 @@ var require_readable = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			return this[kBody];
 		}
 		async dump(opts) {
-			let limit = Number.isFinite(opts?.limit) ? opts.limit : 128 * 1024;
+			let limit = Number.isFinite(opts?.limit) ? opts.limit : 131072;
 			const signal = opts?.signal;
 			if (signal != null && (typeof signal !== "object" || !("aborted" in signal))) throw new InvalidArgumentError("signal must be an AbortSignal");
 			signal?.throwIfAborted();
@@ -10480,7 +10502,7 @@ var require_util$7 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const assert$13 = __require("node:assert");
 	const { ResponseStatusCodeError } = require_errors$3();
 	const { chunksDecode } = require_readable();
-	const CHUNK_LIMIT = 128 * 1024;
+	const CHUNK_LIMIT = 131072;
 	async function getResolveErrorBodyCallback({ callback, body, contentType, statusCode, statusMessage, headers }) {
 		assert$13(body);
 		let chunks = [];
@@ -10569,17 +10591,19 @@ var require_api_request = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			if (util.isStream(body)) body.on("error", (err) => {
 				this.onError(err);
 			});
-			if (this.signal) if (this.signal.aborted) this.reason = this.signal.reason ?? new RequestAbortedError();
-			else this.removeAbortListener = util.addAbortListener(this.signal, () => {
-				this.reason = this.signal.reason ?? new RequestAbortedError();
-				if (this.res) util.destroy(this.res.on("error", util.nop), this.reason);
-				else if (this.abort) this.abort(this.reason);
-				if (this.removeAbortListener) {
-					this.res?.off("close", this.removeAbortListener);
-					this.removeAbortListener();
-					this.removeAbortListener = null;
-				}
-			});
+			if (this.signal) {
+				if (this.signal.aborted) this.reason = this.signal.reason ?? new RequestAbortedError();
+				else this.removeAbortListener = util.addAbortListener(this.signal, () => {
+					this.reason = this.signal.reason ?? new RequestAbortedError();
+					if (this.res) util.destroy(this.res.on("error", util.nop), this.reason);
+					else if (this.abort) this.abort(this.reason);
+					if (this.removeAbortListener) {
+						this.res?.off("close", this.removeAbortListener);
+						this.removeAbortListener();
+						this.removeAbortListener = null;
+					}
+				});
+			}
 		}
 		onConnect(abort, context) {
 			if (this.reason) {
@@ -10613,22 +10637,24 @@ var require_api_request = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			if (this.removeAbortListener) res.on("close", this.removeAbortListener);
 			this.callback = null;
 			this.res = res;
-			if (callback !== null) if (this.throwOnError && statusCode >= 400) this.runInAsyncScope(getResolveErrorBodyCallback, null, {
-				callback,
-				body: res,
-				contentType,
-				statusCode,
-				statusMessage,
-				headers
-			});
-			else this.runInAsyncScope(callback, null, null, {
-				statusCode,
-				headers,
-				trailers: this.trailers,
-				opaque,
-				body: res,
-				context
-			});
+			if (callback !== null) {
+				if (this.throwOnError && statusCode >= 400) this.runInAsyncScope(getResolveErrorBodyCallback, null, {
+					callback,
+					body: res,
+					contentType,
+					statusCode,
+					statusMessage,
+					headers
+				});
+				else this.runInAsyncScope(callback, null, null, {
+					statusCode,
+					headers,
+					trailers: this.trailers,
+					opaque,
+					body: res,
+					context
+				});
+			}
 		}
 		onData(chunk) {
 			return this.res.push(chunk);
@@ -11320,7 +11346,10 @@ var require_mock_utils = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 		matchedMockDispatches = matchedMockDispatches.filter(({ body }) => typeof body !== "undefined" ? matchValue(body, key.body) : true);
 		if (matchedMockDispatches.length === 0) throw new MockNotMatchedError(`Mock dispatch not matched for body '${key.body}' on path '${resolvedPath}'`);
 		matchedMockDispatches = matchedMockDispatches.filter((mockDispatch) => matchHeaders(mockDispatch, key.headers));
-		if (matchedMockDispatches.length === 0) throw new MockNotMatchedError(`Mock dispatch not matched for headers '${typeof key.headers === "object" ? JSON.stringify(key.headers) : key.headers}' on path '${resolvedPath}'`);
+		if (matchedMockDispatches.length === 0) {
+			const headers = typeof key.headers === "object" ? JSON.stringify(key.headers) : key.headers;
+			throw new MockNotMatchedError(`Mock dispatch not matched for headers '${headers}' on path '${resolvedPath}'`);
+		}
 		return matchedMockDispatches[0];
 	}
 	function addMockDispatch(mockDispatches, key, data) {
@@ -11524,10 +11553,12 @@ var require_mock_interceptor = /* @__PURE__ */ __commonJSMin(((exports, module) 
 			if (typeof opts !== "object") throw new InvalidArgumentError("opts must be an object");
 			if (typeof opts.path === "undefined") throw new InvalidArgumentError("opts.path must be defined");
 			if (typeof opts.method === "undefined") opts.method = "GET";
-			if (typeof opts.path === "string") if (opts.query) opts.path = buildURL(opts.path, opts.query);
-			else {
-				const parsedURL = new URL(opts.path, "data://");
-				opts.path = parsedURL.pathname + parsedURL.search;
+			if (typeof opts.path === "string") {
+				if (opts.query) opts.path = buildURL(opts.path, opts.query);
+				else {
+					const parsedURL = new URL(opts.path, "data://");
+					opts.path = parsedURL.pathname + parsedURL.search;
+				}
 			}
 			if (typeof opts.method === "string") opts.method = opts.method.toUpperCase();
 			this[kDispatchKey] = buildKey(opts);
@@ -11818,9 +11849,10 @@ var require_mock_agent = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			this[kIsMockActive] = true;
 		}
 		enableNetConnect(matcher) {
-			if (typeof matcher === "string" || typeof matcher === "function" || matcher instanceof RegExp) if (Array.isArray(this[kNetConnect])) this[kNetConnect].push(matcher);
-			else this[kNetConnect] = [matcher];
-			else if (typeof matcher === "undefined") this[kNetConnect] = true;
+			if (typeof matcher === "string" || typeof matcher === "function" || matcher instanceof RegExp) {
+				if (Array.isArray(this[kNetConnect])) this[kNetConnect].push(matcher);
+				else this[kNetConnect] = [matcher];
+			} else if (typeof matcher === "undefined") this[kNetConnect] = true;
 			else throw new InvalidArgumentError("Unsupported matcher. Must be one of String|Function|RegExp.");
 		}
 		disableNetConnect() {
@@ -11976,7 +12008,7 @@ var require_dump = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const { InvalidArgumentError, RequestAbortedError } = require_errors$3();
 	const DecoratorHandler = require_decorator_handler();
 	var DumpHandler = class extends DecoratorHandler {
-		#maxSize = 1024 * 1024;
+		#maxSize = 1048576;
 		#abort = null;
 		#dumped = false;
 		#aborted = false;
@@ -12026,7 +12058,7 @@ var require_dump = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			this.#handler.onComplete(trailers);
 		}
 	};
-	function createDumpInterceptor({ maxSize: defaultMaxSize } = { maxSize: 1024 * 1024 }) {
+	function createDumpInterceptor({ maxSize: defaultMaxSize } = { maxSize: 1048576 }) {
 		return (dispatch) => {
 			return function Intercept(opts, handler) {
 				const { dumpMaxSize = defaultMaxSize } = opts;
@@ -12123,12 +12155,14 @@ var require_dns = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			const { records, offset } = hostnameRecords;
 			let family;
 			if (this.dualStack) {
-				if (affinity == null) if (offset == null || offset === maxInt) {
-					hostnameRecords.offset = 0;
-					affinity = 4;
-				} else {
-					hostnameRecords.offset++;
-					affinity = (hostnameRecords.offset & 1) === 1 ? 6 : 4;
+				if (affinity == null) {
+					if (offset == null || offset === maxInt) {
+						hostnameRecords.offset = 0;
+						affinity = 4;
+					} else {
+						hostnameRecords.offset++;
+						affinity = (hostnameRecords.offset & 1) === 1 ? 6 : 4;
+					}
 				}
 				if (records[affinity] != null && records[affinity].ips.length > 0) family = records[affinity];
 				else family = records[affinity === 4 ? 6 : 4];
@@ -12197,9 +12231,7 @@ var require_dns = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 					this.#handler.onError(err);
 					return;
 				case "ENOTFOUND": this.#state.deleteRecord(this.#origin);
-				default:
-					this.#handler.onError(err);
-					break;
+				default: this.#handler.onError(err);
 			}
 		}
 	};
@@ -12639,7 +12671,8 @@ var require_response = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 		static json(data, init = {}) {
 			webidl.argumentLengthCheck(arguments, 1, "Response.json");
 			if (init !== null) init = webidl.converters.ResponseInit(init);
-			const body = extractBody(textEncoder.encode(serializeJavascriptValueToJSONString(data)));
+			const bytes = textEncoder.encode(serializeJavascriptValueToJSONString(data));
+			const body = extractBody(bytes);
 			const responseObject = fromInnerResponse(makeResponse({}), "response");
 			initializeResponse(responseObject, init, {
 				body: body[0],
@@ -13608,7 +13641,8 @@ var require_fetch = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			taskDestination = request.client.globalObject;
 			crossOriginIsolatedCapability = request.client.crossOriginIsolatedCapability;
 		}
-		const timingInfo = createOpaqueTimingInfo({ startTime: coarsenedSharedCurrentTime(crossOriginIsolatedCapability) });
+		const currentTime = coarsenedSharedCurrentTime(crossOriginIsolatedCapability);
+		const timingInfo = createOpaqueTimingInfo({ startTime: currentTime });
 		const fetchParams = {
 			controller: new Fetch(dispatcher),
 			request,
@@ -13624,8 +13658,10 @@ var require_fetch = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 		assert$4(!request.body || request.body.stream);
 		if (request.window === "client") request.window = request.client?.globalObject?.constructor?.name === "Window" ? request.client : "no-window";
 		if (request.origin === "client") request.origin = request.client.origin;
-		if (request.policyContainer === "client") if (request.client != null) request.policyContainer = clonePolicyContainer(request.client.policyContainer);
-		else request.policyContainer = makePolicyContainer();
+		if (request.policyContainer === "client") {
+			if (request.client != null) request.policyContainer = clonePolicyContainer(request.client.policyContainer);
+			else request.policyContainer = makePolicyContainer();
+		}
 		if (!request.headersList.contains("accept", true)) request.headersList.append("accept", "*/*", true);
 		if (!request.headersList.contains("accept-language", true)) request.headersList.append("accept-language", "*", true);
 		if (request.priority === null) {}
@@ -13716,7 +13752,8 @@ var require_fetch = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 					response.headersList.set("content-type", type, true);
 				} else {
 					response.rangeRequested = true;
-					const rangeValue = simpleRangeHeaderValue(request.headersList.get("range", true), true);
+					const rangeHeader = request.headersList.get("range", true);
+					const rangeValue = simpleRangeHeaderValue(rangeHeader, true);
 					if (rangeValue === "failure") return Promise.resolve(makeNetworkError("failed to fetch the data URL"));
 					let { rangeStartValue: rangeStart, rangeEndValue: rangeEnd } = rangeValue;
 					if (rangeStart === null) {
@@ -13739,7 +13776,8 @@ var require_fetch = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 				return Promise.resolve(response);
 			}
 			case "data:": {
-				const dataURLStruct = dataURLProcessor(requestCurrentURL(request));
+				const currentURL = requestCurrentURL(request);
+				const dataURLStruct = dataURLProcessor(currentURL);
 				if (dataURLStruct === "failure") return Promise.resolve(makeNetworkError("failed to fetch the data URL"));
 				const mimeType = serializeAMimeType(dataURLStruct.mimeType);
 				return Promise.resolve(makeResponse({
@@ -13892,8 +13930,10 @@ var require_fetch = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			if (!httpRequest.headersList.contains("cache-control", true)) httpRequest.headersList.append("cache-control", "no-cache", true);
 		}
 		if (httpRequest.headersList.contains("range", true)) httpRequest.headersList.append("accept-encoding", "identity", true);
-		if (!httpRequest.headersList.contains("accept-encoding", true)) if (urlHasHttpsScheme(requestCurrentURL(httpRequest))) httpRequest.headersList.append("accept-encoding", "br, gzip, deflate", true);
-		else httpRequest.headersList.append("accept-encoding", "gzip, deflate", true);
+		if (!httpRequest.headersList.contains("accept-encoding", true)) {
+			if (urlHasHttpsScheme(requestCurrentURL(httpRequest))) httpRequest.headersList.append("accept-encoding", "br, gzip, deflate", true);
+			else httpRequest.headersList.append("accept-encoding", "gzip, deflate", true);
+		}
 		httpRequest.headersList.delete("host", true);
 		if (includeCredentials) {}
 		httpRequest.cache = "no-store";
@@ -15098,8 +15138,10 @@ var require_cache = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			});
 			const clonedResponse = cloneResponse(innerResponse);
 			const bodyReadPromise = createDeferredPromise();
-			if (innerResponse.body != null) readAllBytes(innerResponse.body.stream.getReader()).then(bodyReadPromise.resolve, bodyReadPromise.reject);
-			else bodyReadPromise.resolve(void 0);
+			if (innerResponse.body != null) {
+				const reader = innerResponse.body.stream.getReader();
+				readAllBytes(reader).then(bodyReadPromise.resolve, bodyReadPromise.reject);
+			} else bodyReadPromise.resolve(void 0);
 			/** @type {CacheBatchOperation[]} */
 			const operations = [];
 			/** @type {CacheBatchOperation} */
@@ -15391,7 +15433,10 @@ var require_cachestorage = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			request = webidl.converters.RequestInfo(request);
 			options = webidl.converters.MultiCacheQueryOptions(options);
 			if (options.cacheName != null) {
-				if (this.#caches.has(options.cacheName)) return await new Cache(kConstruct, this.#caches.get(options.cacheName)).match(request, options);
+				if (this.#caches.has(options.cacheName)) {
+					const cacheList = this.#caches.get(options.cacheName);
+					return await new Cache(kConstruct, cacheList).match(request, options);
+				}
 			} else for (const cacheList of this.#caches.values()) {
 				const response = await new Cache(kConstruct, cacheList).match(request, options);
 				if (response !== void 0) return response;
@@ -15419,7 +15464,10 @@ var require_cachestorage = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			const prefix = "CacheStorage.open";
 			webidl.argumentLengthCheck(arguments, 1, prefix);
 			cacheName = webidl.converters.DOMString(cacheName, prefix, "cacheName");
-			if (this.#caches.has(cacheName)) return new Cache(kConstruct, this.#caches.get(cacheName));
+			if (this.#caches.has(cacheName)) {
+				const cache = this.#caches.get(cacheName);
+				return new Cache(kConstruct, cache);
+			}
 			const cache = [];
 			this.#caches.set(cacheName, cache);
 			return new Cache(kConstruct, cache);
@@ -16299,8 +16347,10 @@ var require_util$3 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			failWebsocketConnection(ws, "Received invalid UTF-8 in text frame.");
 			return;
 		}
-		else if (type === opcodes.BINARY) if (ws[kBinaryType] === "blob") dataForEvent = new Blob([data]);
-		else dataForEvent = toArrayBuffer(data);
+		else if (type === opcodes.BINARY) {
+			if (ws[kBinaryType] === "blob") dataForEvent = new Blob([data]);
+			else dataForEvent = toArrayBuffer(data);
+		}
 		fireEvent("message", ws, createFastMessageEvent, {
 			origin: ws[kWebSocketURL].origin,
 			data: dataForEvent
@@ -17572,7 +17622,6 @@ var require_eventsource_stream = /* @__PURE__ */ __commonJSMin(((exports, module
 				default:
 					if (this.buffer[0] === BOM[0] && this.buffer[1] === BOM[1] && this.buffer[2] === BOM[2]) this.buffer = this.buffer.subarray(3);
 					this.checkBOM = false;
-					break;
 			}
 			while (this.pos < this.buffer.length) {
 				if (this.eventEndCheck) {
@@ -17638,9 +17687,7 @@ var require_eventsource_stream = /* @__PURE__ */ __commonJSMin(((exports, module
 				case "id":
 					if (isValidLastEventId(value)) event[field] = value;
 					break;
-				case "event":
-					if (value.length > 0) event[field] = value;
-					break;
+				case "event": if (value.length > 0) event[field] = value;
 			}
 		}
 		/**
@@ -17846,13 +17893,15 @@ var require_eventsource = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			};
 			fetchParams.processResponseEndOfBody = processEventSourceEndOfBody;
 			fetchParams.processResponse = (response) => {
-				if (isNetworkError(response)) if (response.aborted) {
-					this.close();
-					this.dispatchEvent(new Event("error"));
-					return;
-				} else {
-					this.#reconnect();
-					return;
+				if (isNetworkError(response)) {
+					if (response.aborted) {
+						this.close();
+						this.dispatchEvent(new Event("error"));
+						return;
+					} else {
+						this.#reconnect();
+						return;
+					}
 				}
 				const contentType = response.headersList.get("content-type", true);
 				const mimeType = contentType !== null ? parseMIMEType(contentType) : "failure";
@@ -18684,8 +18733,10 @@ function which(tool, check) {
 		if (!tool) throw new Error("parameter 'tool' is required");
 		if (check) {
 			const result = yield which(tool, false);
-			if (!result) if (IS_WINDOWS$1) throw new Error(`Unable to locate executable file: ${tool}. Please verify either the file path exists or the file can be found within a directory specified by the PATH environment variable. Also verify the file has a valid extension for an executable file.`);
-			else throw new Error(`Unable to locate executable file: ${tool}. Please verify either the file path exists or the file can be found within a directory specified by the PATH environment variable. Also check the file mode to verify the file is executable.`);
+			if (!result) {
+				if (IS_WINDOWS$1) throw new Error(`Unable to locate executable file: ${tool}. Please verify either the file path exists or the file can be found within a directory specified by the PATH environment variable. Also verify the file has a valid extension for an executable file.`);
+				else throw new Error(`Unable to locate executable file: ${tool}. Please verify either the file path exists or the file can be found within a directory specified by the PATH environment variable. Also check the file mode to verify the file is executable.`);
+			}
 			return result;
 		}
 		const matches = yield findInPath(tool);
@@ -18768,17 +18819,18 @@ var ToolRunner = class extends events.EventEmitter {
 		const toolPath = this._getSpawnFileName();
 		const args = this._getSpawnArgs(options);
 		let cmd = noPrefix ? "" : "[command]";
-		if (IS_WINDOWS) if (this._isCmdFile()) {
-			cmd += toolPath;
-			for (const a of args) cmd += ` ${a}`;
-		} else if (options.windowsVerbatimArguments) {
-			cmd += `"${toolPath}"`;
-			for (const a of args) cmd += ` ${a}`;
+		if (IS_WINDOWS) {
+			if (this._isCmdFile()) {
+				cmd += toolPath;
+				for (const a of args) cmd += ` ${a}`;
+			} else if (options.windowsVerbatimArguments) {
+				cmd += `"${toolPath}"`;
+				for (const a of args) cmd += ` ${a}`;
+			} else {
+				cmd += this._windowsQuoteCmdArg(toolPath);
+				for (const a of args) cmd += ` ${this._windowsQuoteCmdArg(a)}`;
+			}
 		} else {
-			cmd += this._windowsQuoteCmdArg(toolPath);
-			for (const a of args) cmd += ` ${this._windowsQuoteCmdArg(a)}`;
-		}
-		else {
 			cmd += toolPath;
 			for (const a of args) cmd += ` ${a}`;
 		}
@@ -19224,7 +19276,7 @@ function info(message) {
 	process.stdout.write(message + os$2.EOL);
 }
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/errors/index.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/errors/index.js
 var require_errors$2 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.FileNotFoundError = exports.DuplicateReleaseError = exports.AuthError = exports.GitHubAPIError = exports.MissingRequiredFileError = exports.ConfigurationError = void 0;
@@ -19288,14 +19340,12 @@ var require_errors$2 = /* @__PURE__ */ __commonJSMin(((exports) => {
 //#endregion
 //#region node_modules/.pnpm/semver@7.8.5/node_modules/semver/internal/constants.js
 var require_constants = /* @__PURE__ */ __commonJSMin(((exports, module) => {
-	const SEMVER_SPEC_VERSION = "2.0.0";
-	const MAX_LENGTH = 256;
-	const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || 9007199254740991;
 	module.exports = {
-		MAX_LENGTH,
+		MAX_LENGTH: 256,
 		MAX_SAFE_COMPONENT_LENGTH: 16,
-		MAX_SAFE_BUILD_LENGTH: MAX_LENGTH - 6,
-		MAX_SAFE_INTEGER,
+		MAX_SAFE_BUILD_LENGTH: 250,
+		MAX_SAFE_INTEGER: Number.MAX_SAFE_INTEGER || 
+		/* istanbul ignore next */ 9007199254740991,
 		RELEASE_TYPES: [
 			"major",
 			"premajor",
@@ -19305,7 +19355,7 @@ var require_constants = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			"prepatch",
 			"prerelease"
 		],
-		SEMVER_SPEC_VERSION,
+		SEMVER_SPEC_VERSION: "2.0.0",
 		FLAG_INCLUDE_PRERELEASE: 1,
 		FLAG_LOOSE: 2
 	};
@@ -19443,9 +19493,10 @@ var require_semver$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = class SemVer {
 		constructor(version, options) {
 			options = parseOptions(options);
-			if (version instanceof SemVer) if (version.loose === !!options.loose && version.includePrerelease === !!options.includePrerelease) return version;
-			else version = version.version;
-			else if (typeof version !== "string") throw new TypeError(`Invalid version. Must be a string. Got type "${typeof version}".`);
+			if (version instanceof SemVer) {
+				if (version.loose === !!options.loose && version.includePrerelease === !!options.includePrerelease) return version;
+				else version = version.version;
+			} else if (typeof version !== "string") throw new TypeError(`Invalid version. Must be a string. Got type "${typeof version}".`);
 			if (version.length > MAX_LENGTH) throw new TypeError(`version is longer than ${MAX_LENGTH} characters`);
 			debug("SemVer", version, options);
 			this.options = options;
@@ -19867,7 +19918,11 @@ var require_coerce = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 		}
 		if (match === null) return null;
 		const major = match[2];
-		return parse(`${major}.${match[3] || "0"}.${match[4] || "0"}${options.includePrerelease && match[5] ? `-${match[5]}` : ""}${options.includePrerelease && match[6] ? `+${match[6]}` : ""}`, options);
+		const minor = match[3] || "0";
+		const patch = match[4] || "0";
+		const prerelease = options.includePrerelease && match[5] ? `-${match[5]}` : "";
+		const build = options.includePrerelease && match[6] ? `+${match[6]}` : "";
+		return parse(`${major}.${minor}.${patch}${prerelease}${build}`, options);
 	};
 	module.exports = coerce;
 }));
@@ -19883,7 +19938,8 @@ var require_truncate = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 		return clonedVersion && doTruncation(clonedVersion, truncation);
 	};
 	const cloneInputVersion = (version, options) => {
-		return parse(version instanceof SemVer ? version.version : version, options);
+		const versionStringToParse = version instanceof SemVer ? version.version : version;
+		return parse(versionStringToParse, options);
 	};
 	const doTruncation = (version, truncation) => {
 		if (isPrerelease(truncation)) return version.version;
@@ -19893,9 +19949,7 @@ var require_truncate = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 				version.minor = 0;
 				version.patch = 0;
 				break;
-			case "minor":
-				version.patch = 0;
-				break;
+			case "minor": version.patch = 0;
 		}
 		return version.format();
 	};
@@ -19944,8 +19998,10 @@ var require_range = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = class Range {
 		constructor(range, options) {
 			options = parseOptions(options);
-			if (range instanceof Range) if (range.loose === !!options.loose && range.includePrerelease === !!options.includePrerelease) return range;
-			else return new Range(range.raw, options);
+			if (range instanceof Range) {
+				if (range.loose === !!options.loose && range.includePrerelease === !!options.includePrerelease) return range;
+				else return new Range(range.raw, options);
+			}
 			if (range instanceof Comparator) {
 				this.raw = range.value;
 				this.set = [[range]];
@@ -20115,18 +20171,21 @@ var require_range = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			let ret;
 			if (isX(M)) ret = "";
 			else if (isX(m)) ret = `>=${M}.0.0${z} <${+M + 1}.0.0-0`;
-			else if (isX(p)) if (M === "0") ret = `>=${M}.${m}.0${z} <${M}.${+m + 1}.0-0`;
-			else ret = `>=${M}.${m}.0${z} <${+M + 1}.0.0-0`;
-			else if (pr) {
+			else if (isX(p)) {
+				if (M === "0") ret = `>=${M}.${m}.0${z} <${M}.${+m + 1}.0-0`;
+				else ret = `>=${M}.${m}.0${z} <${+M + 1}.0.0-0`;
+			} else if (pr) {
 				debug("replaceCaret pr", pr);
-				if (M === "0") if (m === "0") ret = `>=${M}.${m}.${p}-${pr} <${M}.${m}.${+p + 1}-0`;
-				else ret = `>=${M}.${m}.${p}-${pr} <${M}.${+m + 1}.0-0`;
-				else ret = `>=${M}.${m}.${p}-${pr} <${+M + 1}.0.0-0`;
+				if (M === "0") {
+					if (m === "0") ret = `>=${M}.${m}.${p}-${pr} <${M}.${m}.${+p + 1}-0`;
+					else ret = `>=${M}.${m}.${p}-${pr} <${M}.${+m + 1}.0-0`;
+				} else ret = `>=${M}.${m}.${p}-${pr} <${+M + 1}.0.0-0`;
 			} else {
 				debug("no pr");
-				if (M === "0") if (m === "0") ret = `>=${M}.${m}.${p} <${M}.${m}.${+p + 1}-0`;
-				else ret = `>=${M}.${m}.${p} <${M}.${+m + 1}.0-0`;
-				else ret = `>=${M}.${m}.${p} <${+M + 1}.0.0-0`;
+				if (M === "0") {
+					if (m === "0") ret = `>=${M}.${m}.${p} <${M}.${m}.${+p + 1}-0`;
+					else ret = `>=${M}.${m}.${p} <${M}.${+m + 1}.0-0`;
+				} else ret = `>=${M}.${m}.${p} <${+M + 1}.0.0-0`;
 			}
 			debug("caret return", ret);
 			return ret;
@@ -20148,9 +20207,10 @@ var require_range = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			const anyX = xp;
 			if (gtlt === "=" && anyX) gtlt = "";
 			pr = options.includePrerelease ? "-0" : "";
-			if (xM) if (gtlt === ">" || gtlt === "<") ret = "<0.0.0-0";
-			else ret = "*";
-			else if (gtlt && anyX) {
+			if (xM) {
+				if (gtlt === ">" || gtlt === "<") ret = "<0.0.0-0";
+				else ret = "*";
+			} else if (gtlt && anyX) {
 				if (xm) m = 0;
 				p = 0;
 				if (gtlt === ">") {
@@ -20224,8 +20284,10 @@ var require_comparator = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 		}
 		constructor(comp, options) {
 			options = parseOptions(options);
-			if (comp instanceof Comparator) if (comp.loose === !!options.loose) return comp;
-			else comp = comp.value;
+			if (comp instanceof Comparator) {
+				if (comp.loose === !!options.loose) return comp;
+				else comp = comp.value;
+			}
 			comp = comp.trim().split(/\s+/).join(" ");
 			debug("comparator", comp, options);
 			this.options = options;
@@ -20545,11 +20607,15 @@ var require_subset = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const minimumVersion = [new Comparator(">=0.0.0")];
 	const simpleSubset = (sub, dom, options) => {
 		if (sub === dom) return true;
-		if (sub.length === 1 && sub[0].semver === ANY) if (dom.length === 1 && dom[0].semver === ANY) return true;
-		else if (options.includePrerelease) sub = minimumVersionWithPreRelease;
-		else sub = minimumVersion;
-		if (dom.length === 1 && dom[0].semver === ANY) if (options.includePrerelease) return true;
-		else dom = minimumVersion;
+		if (sub.length === 1 && sub[0].semver === ANY) {
+			if (dom.length === 1 && dom[0].semver === ANY) return true;
+			else if (options.includePrerelease) sub = minimumVersionWithPreRelease;
+			else sub = minimumVersion;
+		}
+		if (dom.length === 1 && dom[0].semver === ANY) {
+			if (options.includePrerelease) return true;
+			else dom = minimumVersion;
+		}
 		const eqSet = /* @__PURE__ */ new Set();
 		let gt, lt;
 		for (const c of sub) if (c.operator === ">" || c.operator === ">=") gt = higherGT(gt, c, options);
@@ -20670,7 +20736,7 @@ var require_semver = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	};
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/version.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/version.js
 var require_version = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Version = void 0;
@@ -21994,7 +22060,6 @@ var require_conversions = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 				r = v;
 				g = wh;
 				b = n;
-				break;
 		}
 		return [
 			r * 255,
@@ -22647,9 +22712,11 @@ var require_supports_color = /* @__PURE__ */ __commonJSMin(((exports, module) =>
 	let forceColor;
 	if (hasFlag("no-color") || hasFlag("no-colors") || hasFlag("color=false") || hasFlag("color=never")) forceColor = 0;
 	else if (hasFlag("color") || hasFlag("colors") || hasFlag("color=true") || hasFlag("color=always")) forceColor = 1;
-	if ("FORCE_COLOR" in env) if (env.FORCE_COLOR === "true") forceColor = 1;
-	else if (env.FORCE_COLOR === "false") forceColor = 0;
-	else forceColor = env.FORCE_COLOR.length === 0 ? 1 : Math.min(parseInt(env.FORCE_COLOR, 10), 3);
+	if ("FORCE_COLOR" in env) {
+		if (env.FORCE_COLOR === "true") forceColor = 1;
+		else if (env.FORCE_COLOR === "false") forceColor = 0;
+		else forceColor = env.FORCE_COLOR.length === 0 ? 1 : Math.min(parseInt(env.FORCE_COLOR, 10), 3);
+	}
 	function translateLevel(level) {
 		if (level === 0) return false;
 		return {
@@ -23124,7 +23191,7 @@ var require_figures = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports.windows = windows;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/util/logger.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/util/logger.js
 var require_logger$2 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.setLogger = exports.logger = exports.CheckpointLogger = void 0;
@@ -23335,7 +23402,8 @@ var require_parser$4 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	function text(scanner) {
 		const node = scanner.enter("text", "");
 		while (!scanner.eof()) {
-			if (isNewline(scanner.peek())) break;
+			const token = scanner.peek();
+			if (isNewline(token)) break;
 			node.value += scanner.next();
 		}
 		return scanner.exit(node);
@@ -23514,9 +23582,7 @@ var require_utils$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 				case "body":
 					body = node;
 					break;
-				case "summary":
-					summary = node;
-					break;
+				case "summary": summary = node;
 			}
 		});
 		visit(summary, (node) => {
@@ -23535,8 +23601,6 @@ var require_utils$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 				case "text":
 					cc.subject = node.value;
 					cc.header += `: ${node.value}`;
-					break;
-				default: break;
 			}
 		});
 		if (body) visit(body, "text", (node, _i, parent) => {
@@ -23568,7 +23632,6 @@ var require_utils$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 					visit(parent, "text", (node) => {
 						breaking.text = node.value;
 					});
-					break;
 			}
 		});
 		if (breaking.text !== "") cc.notes.push(breaking);
@@ -23587,12 +23650,10 @@ var require_utils$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 					case "separator":
 						if (node.value.includes("#")) hasRefSepartor = true;
 						break;
-					case "text":
-						if (node.value.charAt(0) === "#") {
-							hasRefSepartor = true;
-							reference.issue = node.value.substring(1);
-						} else reference.issue = node.value;
-						break;
+					case "text": if (node.value.charAt(0) === "#") {
+						hasRefSepartor = true;
+						reference.issue = node.value.substring(1);
+					} else reference.issue = node.value;
 				}
 			});
 			if (hasRefSepartor && reference.issue.match(NUMBER_REGEX)) cc.references.push(reference);
@@ -23614,25 +23675,41 @@ var require_parser$3 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 //#endregion
 //#region node_modules/.pnpm/lodash.ismatch@4.4.0/node_modules/lodash.ismatch/index.js
 var require_lodash_ismatch = /* @__PURE__ */ __commonJSMin(((exports, module) => {
-	/**
-	* lodash (Custom Build) <https://lodash.com/>
-	* Build: `lodash modularize exports="npm" -o ./`
-	* Copyright jQuery Foundation and other contributors <https://jquery.org/>
-	* Released under MIT license <https://lodash.com/license>
-	* Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
-	* Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	*/
-	/** Used as the size to enable large array optimizations. */
-	var LARGE_ARRAY_SIZE = 200;
 	/** Used to stand-in for `undefined` hash values. */
 	var HASH_UNDEFINED = "__lodash_hash_undefined__";
 	/** Used to compose bitmasks for comparison styles. */
-	var UNORDERED_COMPARE_FLAG = 1, PARTIAL_COMPARE_FLAG = 2;
+	var UNORDERED_COMPARE_FLAG = 1;
+	var PARTIAL_COMPARE_FLAG = 2;
 	/** Used as references for various `Number` constants. */
 	var MAX_SAFE_INTEGER = 9007199254740991;
 	/** `Object#toString` result references. */
-	var argsTag = "[object Arguments]", arrayTag = "[object Array]", boolTag = "[object Boolean]", dateTag = "[object Date]", errorTag = "[object Error]", funcTag = "[object Function]", genTag = "[object GeneratorFunction]", mapTag = "[object Map]", numberTag = "[object Number]", objectTag = "[object Object]", promiseTag = "[object Promise]", regexpTag = "[object RegExp]", setTag = "[object Set]", stringTag = "[object String]", symbolTag = "[object Symbol]", weakMapTag = "[object WeakMap]";
-	var arrayBufferTag = "[object ArrayBuffer]", dataViewTag = "[object DataView]", float32Tag = "[object Float32Array]", float64Tag = "[object Float64Array]", int8Tag = "[object Int8Array]", int16Tag = "[object Int16Array]", int32Tag = "[object Int32Array]", uint8Tag = "[object Uint8Array]", uint8ClampedTag = "[object Uint8ClampedArray]", uint16Tag = "[object Uint16Array]", uint32Tag = "[object Uint32Array]";
+	var argsTag = "[object Arguments]";
+	var arrayTag = "[object Array]";
+	var boolTag = "[object Boolean]";
+	var dateTag = "[object Date]";
+	var errorTag = "[object Error]";
+	var funcTag = "[object Function]";
+	var genTag = "[object GeneratorFunction]";
+	var mapTag = "[object Map]";
+	var numberTag = "[object Number]";
+	var objectTag = "[object Object]";
+	var promiseTag = "[object Promise]";
+	var regexpTag = "[object RegExp]";
+	var setTag = "[object Set]";
+	var stringTag = "[object String]";
+	var symbolTag = "[object Symbol]";
+	var weakMapTag = "[object WeakMap]";
+	var arrayBufferTag = "[object ArrayBuffer]";
+	var dataViewTag = "[object DataView]";
+	var float32Tag = "[object Float32Array]";
+	var float64Tag = "[object Float64Array]";
+	var int8Tag = "[object Int8Array]";
+	var int16Tag = "[object Int16Array]";
+	var int32Tag = "[object Int32Array]";
+	var uint8Tag = "[object Uint8Array]";
+	var uint8ClampedTag = "[object Uint8ClampedArray]";
+	var uint16Tag = "[object Uint16Array]";
+	var uint32Tag = "[object Uint32Array]";
 	/**
 	* Used to match `RegExp`
 	* [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
@@ -23773,7 +23850,9 @@ var require_lodash_ismatch = /* @__PURE__ */ __commonJSMin(((exports, module) =>
 		return result;
 	}
 	/** Used for built-in method references. */
-	var arrayProto = Array.prototype, funcProto = Function.prototype, objectProto = Object.prototype;
+	var arrayProto = Array.prototype;
+	var funcProto = Function.prototype;
+	var objectProto = Object.prototype;
 	/** Used to detect overreaching core-js shims. */
 	var coreJsData = root["__core-js_shared__"];
 	/** Used to detect methods masquerading as native. */
@@ -23794,13 +23873,26 @@ var require_lodash_ismatch = /* @__PURE__ */ __commonJSMin(((exports, module) =>
 	/** Used to detect if a method is native. */
 	var reIsNative = RegExp("^" + funcToString.call(hasOwnProperty).replace(reRegExpChar, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$");
 	/** Built-in value references. */
-	var Symbol = root.Symbol, Uint8Array = root.Uint8Array, propertyIsEnumerable = objectProto.propertyIsEnumerable, splice = arrayProto.splice;
+	var Symbol = root.Symbol;
+	var Uint8Array = root.Uint8Array;
+	var propertyIsEnumerable = objectProto.propertyIsEnumerable;
+	var splice = arrayProto.splice;
 	var nativeKeys = overArg(Object.keys, Object);
-	var DataView = getNative(root, "DataView"), Map = getNative(root, "Map"), Promise = getNative(root, "Promise"), Set = getNative(root, "Set"), WeakMap = getNative(root, "WeakMap"), nativeCreate = getNative(Object, "create");
+	var DataView = getNative(root, "DataView");
+	var Map = getNative(root, "Map");
+	var Promise = getNative(root, "Promise");
+	var Set = getNative(root, "Set");
+	var WeakMap = getNative(root, "WeakMap");
+	var nativeCreate = getNative(Object, "create");
 	/** Used to detect maps, sets, and weakmaps. */
-	var dataViewCtorString = toSource(DataView), mapCtorString = toSource(Map), promiseCtorString = toSource(Promise), setCtorString = toSource(Set), weakMapCtorString = toSource(WeakMap);
+	var dataViewCtorString = toSource(DataView);
+	var mapCtorString = toSource(Map);
+	var promiseCtorString = toSource(Promise);
+	var setCtorString = toSource(Set);
+	var weakMapCtorString = toSource(WeakMap);
 	/** Used to convert symbols to primitives and strings. */
-	var symbolProto = Symbol ? Symbol.prototype : void 0, symbolValueOf = symbolProto ? symbolProto.valueOf : void 0;
+	var symbolProto = Symbol ? Symbol.prototype : void 0;
+	var symbolValueOf = symbolProto ? symbolProto.valueOf : void 0;
 	/**
 	* Creates a hash object.
 	*
@@ -24171,7 +24263,7 @@ var require_lodash_ismatch = /* @__PURE__ */ __commonJSMin(((exports, module) =>
 		var cache = this.__data__;
 		if (cache instanceof ListCache) {
 			var pairs = cache.__data__;
-			if (!Map || pairs.length < LARGE_ARRAY_SIZE - 1) {
+			if (!Map || pairs.length < 199) {
 				pairs.push([key, value]);
 				return this;
 			}
@@ -24310,7 +24402,7 @@ var require_lodash_ismatch = /* @__PURE__ */ __commonJSMin(((exports, module) =>
 			} else {
 				var stack = new Stack();
 				if (customizer) var result = customizer(objValue, srcValue, key, object, source, stack);
-				if (!(result === void 0 ? baseIsEqual(srcValue, objValue, customizer, UNORDERED_COMPARE_FLAG | PARTIAL_COMPARE_FLAG, stack) : result)) return false;
+				if (!(result === void 0 ? baseIsEqual(srcValue, objValue, customizer, 3, stack) : result)) return false;
 			}
 		}
 		return true;
@@ -25003,7 +25095,7 @@ var require_conventional_commits_filter = /* @__PURE__ */ __commonJSMin(((export
 	module.exports = conventionalCommitsFilter;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/commit.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/commit.js
 var require_commit = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.parseConventionalCommits = void 0;
@@ -25038,9 +25130,7 @@ var require_commit = /* @__PURE__ */ __commonJSMin(((exports) => {
 				case "body":
 					body = node;
 					break;
-				case "summary":
-					summary = node;
-					break;
+				case "summary": summary = node;
 			}
 		});
 		visit(summary, (node) => {
@@ -25059,8 +25149,6 @@ var require_commit = /* @__PURE__ */ __commonJSMin(((exports) => {
 				case "text":
 					headerCommit.subject = node.value;
 					headerCommit.header += `: ${node.value}`;
-					break;
-				default: break;
 			}
 		});
 		if (body) visit(body, ["text", "newline"], (node) => {
@@ -25099,7 +25187,6 @@ var require_commit = /* @__PURE__ */ __commonJSMin(((exports) => {
 					visit(parent, ["text", "newline"], (node) => {
 						breaking.text = node.value;
 					});
-					break;
 			}
 		});
 		if (body) {
@@ -25129,12 +25216,10 @@ var require_commit = /* @__PURE__ */ __commonJSMin(((exports) => {
 					case "separator":
 						if (node.value.includes("#")) hasRefSepartor = true;
 						break;
-					case "text":
-						if (node.value.charAt(0) === "#") {
-							hasRefSepartor = true;
-							reference.issue = node.value.substring(1);
-						} else reference.issue = node.value;
-						break;
+					case "text": if (node.value.charAt(0) === "#") {
+						hasRefSepartor = true;
+						reference.issue = node.value.substring(1);
+					} else reference.issue = node.value;
 				}
 			});
 			if (hasRefSepartor && reference.issue.match(NUMBER_REGEX)) headerCommit.references.push(reference);
@@ -25162,9 +25247,7 @@ var require_commit = /* @__PURE__ */ __commonJSMin(((exports) => {
 							if (node.value.includes("#")) return;
 							footerText += `${node.value} `;
 							break;
-						default:
-							footerText += node.value;
-							break;
+						default: footerText += node.value;
 					}
 				});
 				if (semanticFooter) {
@@ -25287,7 +25370,7 @@ var require_commit = /* @__PURE__ */ __commonJSMin(((exports) => {
 	}
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/util/commit-utils.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/util/commit-utils.js
 var require_commit_utils = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.normalizePaths = void 0;
@@ -25305,7 +25388,7 @@ var require_commit_utils = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.normalizePaths = normalizePaths;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/util/commit-split.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/util/commit-split.js
 var require_commit_split = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.CommitSplit = void 0;
@@ -25354,11 +25437,13 @@ var require_commit_split = /* @__PURE__ */ __commonJSMin(((exports) => {
 					if (!splitCommits[pkgName]) splitCommits[pkgName] = [];
 					splitCommits[pkgName].push(commit);
 				}
-				if (commit.files.length === 0 && this.includeEmpty) if (this.packagePaths) for (const pkgName of this.packagePaths) {
-					splitCommits[pkgName] = splitCommits[pkgName] || [];
-					splitCommits[pkgName].push(commit);
+				if (commit.files.length === 0 && this.includeEmpty) {
+					if (this.packagePaths) for (const pkgName of this.packagePaths) {
+						splitCommits[pkgName] = splitCommits[pkgName] || [];
+						splitCommits[pkgName].push(commit);
+					}
+					else for (const pkgName in splitCommits) splitCommits[pkgName].push(commit);
 				}
-				else for (const pkgName in splitCommits) splitCommits[pkgName].push(commit);
 			});
 			return splitCommits;
 		}
@@ -25366,7 +25451,7 @@ var require_commit_split = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.CommitSplit = CommitSplit;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/util/tag-name.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/util/tag-name.js
 var require_tag_name = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.TagName = void 0;
@@ -25391,7 +25476,7 @@ var require_tag_name = /* @__PURE__ */ __commonJSMin(((exports) => {
 	};
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/util/branch-name.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/util/branch-name.js
 var require_branch_name = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.BranchName = void 0;
@@ -25587,7 +25672,7 @@ var require_branch_name = /* @__PURE__ */ __commonJSMin(((exports) => {
 	}
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/util/pull-request-title.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/util/pull-request-title.js
 var require_pull_request_title = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.PullRequestTitle = exports.generateMatchPattern = void 0;
@@ -25685,7 +25770,7 @@ var require_pull_request_title = /* @__PURE__ */ __commonJSMin(((exports) => {
 	};
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/changelog-notes/github.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/changelog-notes/github.js
 var require_github$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.GitHubChangelogNotes = void 0;
@@ -25869,7 +25954,7 @@ var require_dateformat = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			firstThursday.setDate(firstThursday.getDate() - (firstThursday.getDay() + 6) % 7 + 3);
 			var ds = targetThursday.getTimezoneOffset() - firstThursday.getTimezoneOffset();
 			targetThursday.setHours(targetThursday.getHours() - ds);
-			var weekDiff = (targetThursday - firstThursday) / (864e5 * 7);
+			var weekDiff = (targetThursday - firstThursday) / 6048e5;
 			return 1 + Math.floor(weekDiff);
 		}
 		/**
@@ -25923,7 +26008,8 @@ var require_utils = /* @__PURE__ */ __commonJSMin(((exports) => {
 		"`": "&#x60;",
 		"=": "&#x3D;"
 	};
-	var badChars = /[&<>"'`=]/g, possible = /[&<>"'`=]/;
+	var badChars = /[&<>"'`=]/g;
+	var possible = /[&<>"'`=]/;
 	function escapeChar(chr) {
 		return escape[chr];
 	}
@@ -26040,11 +26126,12 @@ var require_block_helper_missing = /* @__PURE__ */ __commonJSMin(((exports, modu
 			var inverse = options.inverse, fn = options.fn;
 			if (context === true) return fn(this);
 			else if (context === false || context == null) return inverse(this);
-			else if (_utils.isArray(context)) if (context.length > 0) {
-				if (options.ids) options.ids = [options.name];
-				return instance.helpers.each(context, options);
-			} else return inverse(this);
-			else {
+			else if (_utils.isArray(context)) {
+				if (context.length > 0) {
+					if (options.ids) options.ids = [options.name];
+					return instance.helpers.each(context, options);
+				} else return inverse(this);
+			} else {
 				if (options.data && options.ids) {
 					var data = _utils.createFrame(options.data);
 					data.contextPath = _utils.appendContextPath(options.data.contextPath, options.name);
@@ -26086,23 +26173,25 @@ var require_each = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 					blockParams: _utils.blockParams([context[field], field], [contextPath + field, null])
 				});
 			}
-			if (context && typeof context === "object") if (_utils.isArray(context)) {
-				for (var j = context.length; i < j; i++) if (i in context) execIteration(i, i, i === context.length - 1);
-			} else if (typeof Symbol === "function" && context[Symbol.iterator]) {
-				var newContext = [];
-				var iterator = context[Symbol.iterator]();
-				for (var it = iterator.next(); !it.done; it = iterator.next()) newContext.push(it.value);
-				context = newContext;
-				for (var j = context.length; i < j; i++) execIteration(i, i, i === context.length - 1);
-			} else (function() {
-				var priorKey = void 0;
-				Object.keys(context).forEach(function(key) {
-					if (priorKey !== void 0) execIteration(priorKey, i - 1);
-					priorKey = key;
-					i++;
-				});
-				if (priorKey !== void 0) execIteration(priorKey, i - 1, true);
-			})();
+			if (context && typeof context === "object") {
+				if (_utils.isArray(context)) {
+					for (var j = context.length; i < j; i++) if (i in context) execIteration(i, i, i === context.length - 1);
+				} else if (typeof Symbol === "function" && context[Symbol.iterator]) {
+					var newContext = [];
+					var iterator = context[Symbol.iterator]();
+					for (var it = iterator.next(); !it.done; it = iterator.next()) newContext.push(it.value);
+					context = newContext;
+					for (var j = context.length; i < j; i++) execIteration(i, i, i === context.length - 1);
+				} else (function() {
+					var priorKey = void 0;
+					Object.keys(context).forEach(function(key) {
+						if (priorKey !== void 0) execIteration(priorKey, i - 1);
+						priorKey = key;
+						i++;
+					});
+					if (priorKey !== void 0) execIteration(priorKey, i - 1, true);
+				})();
+			}
 			if (i === 0) ret = inverse(this);
 			return ret;
 		});
@@ -26609,8 +26698,10 @@ var require_runtime = /* @__PURE__ */ __commonJSMin(((exports) => {
 			ret._setup(options);
 			if (!options.partial && templateSpec.useData) data = initData(context, data);
 			var depths = void 0, blockParams = templateSpec.useBlockParams ? [] : void 0;
-			if (templateSpec.useDepths) if (options.depths) depths = context != options.depths[0] ? [context].concat(options.depths) : options.depths;
-			else depths = [context];
+			if (templateSpec.useDepths) {
+				if (options.depths) depths = context != options.depths[0] ? [context].concat(options.depths) : options.depths;
+				else depths = [context];
+			}
 			function main(context) {
 				return "" + templateSpec.main(container, context, container.helpers, container.partials, data, blockParams, depths);
 			}
@@ -26663,9 +26754,10 @@ var require_runtime = /* @__PURE__ */ __commonJSMin(((exports) => {
 	* This is currently part of the official API, therefore implementation details should not be changed.
 	*/
 	function resolvePartial(partial, context, options) {
-		if (!partial) if (options.name === "@partial-block") partial = lookupOwnProperty(options.data, "partial-block");
-		else partial = lookupOwnProperty(options.partials, options.name);
-		else if (!partial.call && !options.name) {
+		if (!partial) {
+			if (options.name === "@partial-block") partial = lookupOwnProperty(options.data, "partial-block");
+			else partial = lookupOwnProperty(options.partials, options.name);
+		} else if (!partial.call && !options.name) {
 			options.name = partial;
 			partial = lookupOwnProperty(options.partials, partial);
 		}
@@ -27366,9 +27458,7 @@ var require_parser$2 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 					case 100:
 						this.$ = [$$[$0]];
 						break;
-					case 101:
-						$$[$0 - 1].push($$[$0]);
-						break;
+					case 101: $$[$0 - 1].push($$[$0]);
 				}
 			},
 			table: [
@@ -29062,7 +29152,6 @@ var require_parser$2 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 							strip(5, 9);
 							return "END_RAW_BLOCK";
 						}
-						break;
 					case 5: return 15;
 					case 6:
 						this.popState();
@@ -29811,12 +29900,14 @@ var require_compiler = /* @__PURE__ */ __commonJSMin(((exports) => {
 			if (program) program = this.compileProgram(partial.program);
 			var params = partial.params;
 			if (params.length > 1) throw new _exception2["default"]("Unsupported number of partial arguments: " + params.length, partial);
-			else if (!params.length) if (this.options.explicitPartialContext) this.opcode("pushLiteral", "undefined");
-			else params.push({
-				type: "PathExpression",
-				parts: [],
-				depth: 0
-			});
+			else if (!params.length) {
+				if (this.options.explicitPartialContext) this.opcode("pushLiteral", "undefined");
+				else params.push({
+					type: "PathExpression",
+					parts: [],
+					depth: 0
+				});
+			}
 			var partialName = partial.name.original, isDynamic = partial.name.type === "SubExpression";
 			if (isDynamic) this.accept(partial.name);
 			this.setupFullMustacheParams(partial, program, void 0, true);
@@ -30524,8 +30615,10 @@ var require_javascript_compiler = /* @__PURE__ */ __commonJSMin(((exports, modul
 		pushStringParam: function pushStringParam(string, type) {
 			this.pushContext();
 			this.pushString(type);
-			if (type !== "SubExpression") if (typeof string === "string") this.pushString(string);
-			else this.pushStackLiteral(string);
+			if (type !== "SubExpression") {
+				if (typeof string === "string") this.pushString(string);
+				else this.pushStackLiteral(string);
+			}
 		},
 		emptyHash: function emptyHash(omitEmpty) {
 			if (this.trackIds) this.push("{}");
@@ -31393,11 +31486,13 @@ var require_conventional_changelog_writer = /* @__PURE__ */ __commonJSMin(((expo
 						if (generateOn(keyCommit, commits, context, options)) {
 							neverGenerated = false;
 							result = util.generate(options, commits, context, savedKeyCommit);
-							if (!firstRelease || options.doFlush) if (options.includeDetails) this.push({
-								log: result,
-								keyCommit: savedKeyCommit
-							});
-							else this.push(result);
+							if (!firstRelease || options.doFlush) {
+								if (options.includeDetails) this.push({
+									log: result,
+									keyCommit: savedKeyCommit
+								});
+								else this.push(result);
+							}
 							firstRelease = false;
 							commits = [];
 							savedKeyCommit = keyCommit;
@@ -31887,7 +31982,7 @@ var require_conventional_changelog_conventionalcommits = /* @__PURE__ */ __commo
 	}
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/changelog-notes/default.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/changelog-notes/default.js
 var require_default$3 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.DefaultChangelogNotes = void 0;
@@ -31901,6 +31996,7 @@ var require_default$3 = /* @__PURE__ */ __commonJSMin(((exports) => {
 			this.mainTemplate = options.mainTemplate;
 		}
 		async buildNotes(commits, options) {
+			var _a;
 			const context = {
 				host: options.host || DEFAULT_HOST,
 				owner: options.owner,
@@ -31913,7 +32009,7 @@ var require_default$3 = /* @__PURE__ */ __commonJSMin(((exports) => {
 			const config = {};
 			if (options.changelogSections) config.types = options.changelogSections;
 			const preset = await presetFactory(config);
-			preset.writerOpts.commitPartial = this.commitPartial || preset.writerOpts.commitPartial;
+			preset.writerOpts.commitPartial = this.commitPartial || ((_a = preset.writerOpts.commitPartial) === null || _a === void 0 ? void 0 : _a.replace(/,\s*closes/g, ", refs"));
 			preset.writerOpts.headerPartial = this.headerPartial || preset.writerOpts.headerPartial;
 			preset.writerOpts.mainTemplate = this.mainTemplate || preset.writerOpts.mainTemplate;
 			const changelogCommits = commits.map((commit) => {
@@ -31951,7 +32047,7 @@ var require_default$3 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	}
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/factories/changelog-notes-factory.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/factories/changelog-notes-factory.js
 var require_changelog_notes_factory = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.getChangelogTypes = exports.unregisterChangelogNotes = exports.registerChangelogNotes = exports.buildChangelogNotes = void 0;
@@ -31982,7 +32078,7 @@ var require_changelog_notes_factory = /* @__PURE__ */ __commonJSMin(((exports) =
 	exports.getChangelogTypes = getChangelogTypes;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/versioning-strategy.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/versioning-strategy.js
 var require_versioning_strategy = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.CustomVersionUpdate = exports.PatchVersionUpdate = exports.MinorVersionUpdate = exports.MajorVersionUpdate = void 0;
@@ -32053,7 +32149,7 @@ var require_versioning_strategy = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.CustomVersionUpdate = CustomVersionUpdate;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/versioning-strategies/default.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/versioning-strategies/default.js
 var require_default$2 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.DefaultVersioningStrategy = void 0;
@@ -32102,10 +32198,13 @@ var require_default$2 = /* @__PURE__ */ __commonJSMin(((exports) => {
 				if (commit.breaking) breaking++;
 				else if (commit.type === "feat" || commit.type === "feature") features++;
 			}
-			if (breaking > 0) if (version.isPreMajor && this.bumpMinorPreMajor) return new versioning_strategy_1.MinorVersionUpdate();
-			else return new versioning_strategy_1.MajorVersionUpdate();
-			else if (features > 0) if (version.isPreMajor && this.bumpPatchForMinorPreMajor) return new versioning_strategy_1.PatchVersionUpdate();
-			else return new versioning_strategy_1.MinorVersionUpdate();
+			if (breaking > 0) {
+				if (version.isPreMajor && this.bumpMinorPreMajor) return new versioning_strategy_1.MinorVersionUpdate();
+				else return new versioning_strategy_1.MajorVersionUpdate();
+			} else if (features > 0) {
+				if (version.isPreMajor && this.bumpPatchForMinorPreMajor) return new versioning_strategy_1.PatchVersionUpdate();
+				else return new versioning_strategy_1.MinorVersionUpdate();
+			}
 			return new versioning_strategy_1.PatchVersionUpdate();
 		}
 		/**
@@ -32123,7 +32222,7 @@ var require_default$2 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.DefaultVersioningStrategy = DefaultVersioningStrategy;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/versioning-strategies/always-bump-patch.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/versioning-strategies/always-bump-patch.js
 var require_always_bump_patch = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.AlwaysBumpPatch = void 0;
@@ -32141,7 +32240,7 @@ var require_always_bump_patch = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.AlwaysBumpPatch = AlwaysBumpPatch;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/versioning-strategies/always-bump-minor.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/versioning-strategies/always-bump-minor.js
 var require_always_bump_minor = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.AlwaysBumpMinor = void 0;
@@ -32158,7 +32257,7 @@ var require_always_bump_minor = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.AlwaysBumpMinor = AlwaysBumpMinor;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/versioning-strategies/always-bump-major.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/versioning-strategies/always-bump-major.js
 var require_always_bump_major = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.AlwaysBumpMajor = void 0;
@@ -32175,7 +32274,7 @@ var require_always_bump_major = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.AlwaysBumpMajor = AlwaysBumpMajor;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/versioning-strategies/service-pack.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/versioning-strategies/service-pack.js
 var require_service_pack = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.ServicePackVersioningStrategy = void 0;
@@ -32211,7 +32310,7 @@ var require_service_pack = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.ServicePackVersioningStrategy = ServicePackVersioningStrategy;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/versioning-strategies/prerelease.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/versioning-strategies/prerelease.js
 var require_prerelease = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.PrereleaseVersioningStrategy = void 0;
@@ -32324,11 +32423,13 @@ var require_prerelease = /* @__PURE__ */ __commonJSMin(((exports) => {
 				else if (commit.type === "feat" || commit.type === "feature") features++;
 			}
 			let bumpedVersionUpdater;
-			if (breaking > 0) if (version.isPreMajor && this.bumpMinorPreMajor) bumpedVersionUpdater = new PrereleaseMinorVersionUpdate(this.prereleaseType);
-			else bumpedVersionUpdater = new PrereleaseMajorVersionUpdate(this.prereleaseType);
-			else if (features > 0) if (version.isPreMajor && this.bumpPatchForMinorPreMajor) bumpedVersionUpdater = new PrereleasePatchVersionUpdate(this.prereleaseType);
-			else bumpedVersionUpdater = new PrereleaseMinorVersionUpdate(this.prereleaseType);
-			else bumpedVersionUpdater = new PrereleasePatchVersionUpdate(this.prereleaseType);
+			if (breaking > 0) {
+				if (version.isPreMajor && this.bumpMinorPreMajor) bumpedVersionUpdater = new PrereleaseMinorVersionUpdate(this.prereleaseType);
+				else bumpedVersionUpdater = new PrereleaseMajorVersionUpdate(this.prereleaseType);
+			} else if (features > 0) {
+				if (version.isPreMajor && this.bumpPatchForMinorPreMajor) bumpedVersionUpdater = new PrereleasePatchVersionUpdate(this.prereleaseType);
+				else bumpedVersionUpdater = new PrereleaseMinorVersionUpdate(this.prereleaseType);
+			} else bumpedVersionUpdater = new PrereleasePatchVersionUpdate(this.prereleaseType);
 			if (!this.prerelease) {
 				const bumpedVersion = bumpedVersionUpdater.bump(version);
 				return new versioning_strategy_1.CustomVersionUpdate(version_1.Version.parse(`${bumpedVersion.major}.${bumpedVersion.minor}.${bumpedVersion.patch}`).toString());
@@ -32339,7 +32440,7 @@ var require_prerelease = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.PrereleaseVersioningStrategy = PrereleaseVersioningStrategy;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/factories/versioning-strategy-factory.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/factories/versioning-strategy-factory.js
 var require_versioning_strategy_factory = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.getVersioningStrategyTypes = exports.unregisterVersioningStrategy = exports.registerVersioningStrategy = exports.buildVersioningStrategy = void 0;
@@ -32378,7 +32479,7 @@ var require_versioning_strategy_factory = /* @__PURE__ */ __commonJSMin(((export
 	exports.getVersioningStrategyTypes = getVersioningStrategyTypes;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/default.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/default.js
 var require_default$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.DefaultUpdater = void 0;
@@ -32403,7 +32504,7 @@ var require_default$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.DefaultUpdater = DefaultUpdater;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/bazel/module-bazel.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/bazel/module-bazel.js
 var require_module_bazel = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.ModuleBazel = void 0;
@@ -32423,7 +32524,7 @@ var require_module_bazel = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.ModuleBazel = ModuleBazel;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/changelog.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/changelog.js
 var require_changelog = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Changelog = void 0;
@@ -32439,9 +32540,10 @@ var require_changelog = /* @__PURE__ */ __commonJSMin(((exports) => {
 		updateContent(content) {
 			content = content || "";
 			const lastEntryIndex = content.search(this.versionHeaderRegex);
-			if (lastEntryIndex === -1) if (content) return `${this.header()}\n${this.changelogEntry}\n\n${adjustHeaders(content).trim()}\n`;
-			else return `${this.header()}\n${this.changelogEntry}\n`;
-			else {
+			if (lastEntryIndex === -1) {
+				if (content) return `${this.header()}\n${this.changelogEntry}\n\n${adjustHeaders(content).trim()}\n`;
+				else return `${this.header()}\n${this.changelogEntry}\n`;
+			} else {
 				const before = content.slice(0, lastEntryIndex);
 				const after = content.slice(lastEntryIndex);
 				return `${before}\n${this.changelogEntry}\n${after}`.trim() + "\n";
@@ -36540,9 +36642,10 @@ var require_he = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 		if (typeof define == "function" && typeof define.amd == "object" && define.amd) define(function() {
 			return he;
 		});
-		else if (freeExports && !freeExports.nodeType) if (freeModule) freeModule.exports = he;
-		else for (var key in he) has(he, key) && (freeExports[key] = he[key]);
-		else root.he = he;
+		else if (freeExports && !freeExports.nodeType) {
+			if (freeModule) freeModule.exports = he;
+			else for (var key in he) has(he, key) && (freeExports[key] = he[key]);
+		} else root.he = he;
 	})(exports);
 }));
 //#endregion
@@ -41587,19 +41690,21 @@ var require_parse$3 = /* @__PURE__ */ __commonJSMin(((exports) => {
 					}
 					var name_2 = getName(1).toLowerCase();
 					var data = null;
-					if (selector.charCodeAt(selectorIndex) === 40) if (unpackPseudos.has(name_2)) {
-						if (isQuote(selector.charCodeAt(selectorIndex + 1))) throw new Error("Pseudo-selector ".concat(name_2, " cannot be quoted"));
-						data = [];
-						selectorIndex = parseSelector(data, selector, selectorIndex + 1);
-						if (selector.charCodeAt(selectorIndex) !== 41) throw new Error("Missing closing parenthesis in :".concat(name_2, " (").concat(selector, ")"));
-						selectorIndex += 1;
-					} else {
-						data = readValueWithParenthesis();
-						if (stripQuotesFromPseudos.has(name_2)) {
-							var quot = data.charCodeAt(0);
-							if (quot === data.charCodeAt(data.length - 1) && isQuote(quot)) data = data.slice(1, -1);
+					if (selector.charCodeAt(selectorIndex) === 40) {
+						if (unpackPseudos.has(name_2)) {
+							if (isQuote(selector.charCodeAt(selectorIndex + 1))) throw new Error("Pseudo-selector ".concat(name_2, " cannot be quoted"));
+							data = [];
+							selectorIndex = parseSelector(data, selector, selectorIndex + 1);
+							if (selector.charCodeAt(selectorIndex) !== 41) throw new Error("Missing closing parenthesis in :".concat(name_2, " (").concat(selector, ")"));
+							selectorIndex += 1;
+						} else {
+							data = readValueWithParenthesis();
+							if (stripQuotesFromPseudos.has(name_2)) {
+								var quot = data.charCodeAt(0);
+								if (quot === data.charCodeAt(data.length - 1) && isQuote(quot)) data = data.slice(1, -1);
+							}
+							data = unescapeCSS(data);
 						}
-						data = unescapeCSS(data);
 					}
 					tokens.push({
 						type: types_1.SelectorType.Pseudo,
@@ -41850,14 +41955,16 @@ var require_sort = /* @__PURE__ */ __commonJSMin(((exports) => {
 			proc = (_b = attributes.get(token.action)) !== null && _b !== void 0 ? _b : 4;
 			if (token.action === css_what_1.AttributeAction.Equals && token.name === "id") proc = 9;
 			if (token.ignoreCase) proc >>= 1;
-		} else if (token.type === css_what_1.SelectorType.Pseudo) if (!token.data) proc = 3;
-		else if (token.name === "has" || token.name === "contains") proc = 0;
-		else if (Array.isArray(token.data)) {
-			proc = Math.min.apply(Math, token.data.map(function(d) {
-				return Math.min.apply(Math, d.map(getProcedure));
-			}));
-			if (proc < 0) proc = 0;
-		} else proc = 2;
+		} else if (token.type === css_what_1.SelectorType.Pseudo) {
+			if (!token.data) proc = 3;
+			else if (token.name === "has" || token.name === "contains") proc = 0;
+			else if (Array.isArray(token.data)) {
+				proc = Math.min.apply(Math, token.data.map(function(d) {
+					return Math.min.apply(Math, d.map(getProcedure));
+				}));
+				if (proc < 0) proc = 0;
+			} else proc = 2;
+		}
 		return proc;
 	}
 }));
@@ -43343,12 +43450,14 @@ var require_text = /* @__PURE__ */ __commonJSMin(((exports) => {
 		var startPos;
 		var endPos;
 		while (i >= 0 && i < text.length) {
-			if (/\S/.test(text[i])) if (startPos === void 0) {
-				startPos = i;
-				i = text.length;
-			} else {
-				endPos = i;
-				i = void 0;
+			if (/\S/.test(text[i])) {
+				if (startPos === void 0) {
+					startPos = i;
+					i = text.length;
+				} else {
+					endPos = i;
+					i = void 0;
+				}
 			}
 			if (startPos === void 0) i++;
 			else i--;
@@ -43687,19 +43796,22 @@ var require_html = /* @__PURE__ */ __commonJSMin(((exports) => {
 				var currentBlock = [];
 				var blocks = [currentBlock];
 				function dfs(node) {
-					if (node.nodeType === type_1.default.ELEMENT_NODE) if (kBlockElements.has(node.rawTagName)) {
-						if (currentBlock.length > 0) blocks.push(currentBlock = []);
-						node.childNodes.forEach(dfs);
-						if (currentBlock.length > 0) blocks.push(currentBlock = []);
-					} else node.childNodes.forEach(dfs);
-					else if (node.nodeType === type_1.default.TEXT_NODE) if (node.isWhitespace) currentBlock.prependWhitespace = true;
-					else {
-						var text = node.trimmedText;
-						if (currentBlock.prependWhitespace) {
-							text = " ".concat(text);
-							currentBlock.prependWhitespace = false;
+					if (node.nodeType === type_1.default.ELEMENT_NODE) {
+						if (kBlockElements.has(node.rawTagName)) {
+							if (currentBlock.length > 0) blocks.push(currentBlock = []);
+							node.childNodes.forEach(dfs);
+							if (currentBlock.length > 0) blocks.push(currentBlock = []);
+						} else node.childNodes.forEach(dfs);
+					} else if (node.nodeType === type_1.default.TEXT_NODE) {
+						if (node.isWhitespace) currentBlock.prependWhitespace = true;
+						else {
+							var text = node.trimmedText;
+							if (currentBlock.prependWhitespace) {
+								text = " ".concat(text);
+								currentBlock.prependWhitespace = false;
+							}
+							currentBlock.push(text);
 						}
-						currentBlock.push(text);
 					}
 				}
 				dfs(this);
@@ -44639,7 +44751,7 @@ var require_dist$4 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	parse.NodeType = type_1.default;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/util/pull-request-body.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/util/pull-request-body.js
 var require_pull_request_body = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.PullRequestBody = void 0;
@@ -44760,7 +44872,7 @@ ${this.footer}`;
 	}
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/composite.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/composite.js
 var require_composite = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.mergeUpdates = exports.CompositeUpdater = void 0;
@@ -44806,7 +44918,7 @@ var require_composite = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.mergeUpdates = mergeUpdates;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/generic.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/generic.js
 var require_generic = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Generic = exports.DEFAULT_DATE_FORMAT = void 0;
@@ -44908,8 +45020,10 @@ var require_generic = /* @__PURE__ */ __commonJSMin(((exports) => {
 					if (line.match(this.blockEndRegex)) blockScope = void 0;
 				} else {
 					match = line.match(this.blockStartRegex);
-					if (match) if ((_b = match.groups) === null || _b === void 0 ? void 0 : _b.scope) blockScope = match.groups.scope;
-					else blockScope = "version";
+					if (match) {
+						if ((_b = match.groups) === null || _b === void 0 ? void 0 : _b.scope) blockScope = match.groups.scope;
+						else blockScope = "version";
+					}
 					newLines.push(line);
 				}
 			});
@@ -46572,7 +46686,7 @@ var require_detect_indent = /* @__PURE__ */ __commonJSMin(((exports, module) => 
 	};
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/util/json-stringify.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/util/json-stringify.js
 var require_json_stringify = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.jsonStringify = void 0;
@@ -46583,7 +46697,7 @@ var require_json_stringify = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.jsonStringify = jsonStringify;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/generic-json.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/generic-json.js
 var require_generic_json = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.GenericJson = void 0;
@@ -46626,7 +46740,7 @@ var require_generic_json = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.GenericJson = GenericJson;
 }));
 //#endregion
-//#region node_modules/.pnpm/@xmldom+xmldom@0.8.13/node_modules/@xmldom/xmldom/lib/conventions.js
+//#region node_modules/.pnpm/@xmldom+xmldom@0.8.14/node_modules/@xmldom/xmldom/lib/conventions.js
 var require_conventions = /* @__PURE__ */ __commonJSMin(((exports) => {
 	/**
 	* Ponyfill for `Array.prototype.find` which is only available in ES6 runtimes.
@@ -46794,18 +46908,25 @@ var require_conventions = /* @__PURE__ */ __commonJSMin(((exports) => {
 		*/
 		XMLNS: "http://www.w3.org/2000/xmlns/"
 	});
+	var nameStartChar = /[A-Z_a-z\xC0-\xD6\xD8-\xF6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/;
+	var nameChar = new RegExp("[\\-\\.0-9" + nameStartChar.source.slice(1, -1) + "\\u00B7\\u0300-\\u036F\\u203F-\\u2040]");
+	var tagNamePattern = new RegExp("^" + nameStartChar.source + nameChar.source + "*(?::" + nameStartChar.source + nameChar.source + "*)?$");
 	exports.assign = assign;
 	exports.find = find;
 	exports.freeze = freeze;
 	exports.MIME_TYPE = MIME_TYPE;
 	exports.NAMESPACE = NAMESPACE;
+	exports.nameStartChar = nameStartChar;
+	exports.nameChar = nameChar;
+	exports.tagNamePattern = tagNamePattern;
 }));
 //#endregion
-//#region node_modules/.pnpm/@xmldom+xmldom@0.8.13/node_modules/@xmldom/xmldom/lib/dom.js
+//#region node_modules/.pnpm/@xmldom+xmldom@0.8.14/node_modules/@xmldom/xmldom/lib/dom.js
 var require_dom = /* @__PURE__ */ __commonJSMin(((exports) => {
 	var conventions = require_conventions();
 	var find = conventions.find;
 	var NAMESPACE = conventions.NAMESPACE;
+	var tagNamePattern = conventions.tagNamePattern;
 	/**
 	* A prerequisite for `[].filter`, to drop elements that are empty
 	* @param {string} input
@@ -48108,6 +48229,9 @@ var require_dom = /* @__PURE__ */ __commonJSMin(((exports) => {
 	* @returns {string}
 	* @throws {DOMException}
 	* With code `INVALID_STATE_ERR` when `requireWellFormed` is `true` and:
+	* - an Element's qualified name (including any namespace prefix) is not a valid XML QName,
+	* - an attribute's qualified name (including a synthesized `xmlns:` namespace declaration) is
+	*   not a valid XML QName,
 	* - a CDATASection node's data contains `"]]>"`,
 	* - a Comment node's data contains `"-->"` (bare `"--"` does not throw on this branch),
 	* - a ProcessingInstruction's data contains `"?>"`,
@@ -48167,7 +48291,8 @@ var require_dom = /* @__PURE__ */ __commonJSMin(((exports) => {
 	* @see https://www.w3.org/TR/xml11/#AVNormalize
 	* @see https://w3c.github.io/DOM-Parsing/#serializing-an-element-s-attributes
 	*/
-	function addSerializedAttribute(buf, qualifiedName, value) {
+	function addSerializedAttribute(buf, qualifiedName, value, requireWellFormed) {
+		if (requireWellFormed && !tagNamePattern.test(qualifiedName)) throw new DOMException(INVALID_STATE_ERR, "The attribute name \"" + qualifiedName + "\" is not a valid XML QName");
 		buf.push(" ", qualifiedName, "=\"", value.replace(/[<>&"\t\n\r]/g, _xmlEncoder), "\"");
 	}
 	function serializeToString(node, buf, isHTML, nodeFilter, visibleNamespaces, requireWellFormed) {
@@ -48216,6 +48341,7 @@ var require_dom = /* @__PURE__ */ __commonJSMin(((exports) => {
 								}
 							}
 						}
+						if (requireWellFormed && !tagNamePattern.test(prefixedNodeName)) throw new DOMException(INVALID_STATE_ERR, "The element name \"" + prefixedNodeName + "\" is not a valid XML QName");
 						buf.push("<", prefixedNodeName);
 						var childNs = ns.slice();
 						for (var i = 0; i < len; i++) {
@@ -48234,20 +48360,22 @@ var require_dom = /* @__PURE__ */ __commonJSMin(((exports) => {
 							if (needNamespaceDefine(attr, html, childNs)) {
 								var attrPrefix = attr.prefix || "";
 								var uri = attr.namespaceURI;
-								addSerializedAttribute(buf, attrPrefix ? "xmlns:" + attrPrefix : "xmlns", uri);
+								addSerializedAttribute(buf, attrPrefix ? "xmlns:" + attrPrefix : "xmlns", uri, requireWellFormed);
 								childNs.push({
 									prefix: attrPrefix,
 									namespace: uri
 								});
 							}
 							var filteredAttr = nodeFilter ? nodeFilter(attr) : attr;
-							if (filteredAttr) if (typeof filteredAttr === "string") buf.push(filteredAttr);
-							else addSerializedAttribute(buf, filteredAttr.name, filteredAttr.value);
+							if (filteredAttr) {
+								if (typeof filteredAttr === "string") buf.push(filteredAttr);
+								else addSerializedAttribute(buf, filteredAttr.name, filteredAttr.value, requireWellFormed);
+							}
 						}
 						if (nodeName === prefixedNodeName && needNamespaceDefine(n, html, childNs)) {
 							var nodePrefix = n.prefix || "";
 							var uri = n.namespaceURI;
-							addSerializedAttribute(buf, nodePrefix ? "xmlns:" + nodePrefix : "xmlns", uri);
+							addSerializedAttribute(buf, nodePrefix ? "xmlns:" + nodePrefix : "xmlns", uri, requireWellFormed);
 							childNs.push({
 								prefix: nodePrefix,
 								namespace: uri
@@ -48281,7 +48409,7 @@ var require_dom = /* @__PURE__ */ __commonJSMin(((exports) => {
 						tag: null
 					};
 					case ATTRIBUTE_NODE:
-						addSerializedAttribute(buf, n.name, n.value);
+						addSerializedAttribute(buf, n.name, n.value, requireWellFormed);
 						return null;
 					case TEXT_NODE:
 						/**
@@ -48465,7 +48593,7 @@ var require_dom = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.XMLSerializer = XMLSerializer;
 }));
 //#endregion
-//#region node_modules/.pnpm/@xmldom+xmldom@0.8.13/node_modules/@xmldom/xmldom/lib/entities.js
+//#region node_modules/.pnpm/@xmldom+xmldom@0.8.14/node_modules/@xmldom/xmldom/lib/entities.js
 var require_entities = /* @__PURE__ */ __commonJSMin(((exports) => {
 	var freeze = require_conventions().freeze;
 	/**
@@ -50630,12 +50758,10 @@ var require_entities = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.entityMap = exports.HTML_ENTITIES;
 }));
 //#endregion
-//#region node_modules/.pnpm/@xmldom+xmldom@0.8.13/node_modules/@xmldom/xmldom/lib/sax.js
+//#region node_modules/.pnpm/@xmldom+xmldom@0.8.14/node_modules/@xmldom/xmldom/lib/sax.js
 var require_sax = /* @__PURE__ */ __commonJSMin(((exports) => {
 	var NAMESPACE = require_conventions().NAMESPACE;
-	var nameStartChar = /[A-Z_a-z\xC0-\xD6\xD8-\xF6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/;
-	var nameChar = new RegExp("[\\-\\.0-9" + nameStartChar.source.slice(1, -1) + "\\u00B7\\u0300-\\u036F\\u203F-\\u2040]");
-	var tagNamePattern = new RegExp("^" + nameStartChar.source + nameChar.source + "*(?::" + nameStartChar.source + nameChar.source + "*)?$");
+	var tagNamePattern = require_conventions().tagNamePattern;
 	var S_TAG = 0;
 	var S_ATTR = 1;
 	var S_ATTR_SPACE = 2;
@@ -50900,9 +51026,7 @@ var require_sax = /* @__PURE__ */ __commonJSMin(((exports) => {
 						var value = source.slice(start, p);
 						errorHandler.warning("attribute \"" + value + "\" missed quot(\")!!");
 						addAttribute(attrName, value, start);
-					case S_ATTR_END:
-						s = S_TAG_SPACE;
-						break;
+					case S_ATTR_END: s = S_TAG_SPACE;
 				}
 				else switch (s) {
 					case S_ATTR_SPACE:
@@ -51118,7 +51242,7 @@ var require_sax = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.ParseError = ParseError;
 }));
 //#endregion
-//#region node_modules/.pnpm/@xmldom+xmldom@0.8.13/node_modules/@xmldom/xmldom/lib/dom-parser.js
+//#region node_modules/.pnpm/@xmldom+xmldom@0.8.14/node_modules/@xmldom/xmldom/lib/dom-parser.js
 var require_dom_parser = /* @__PURE__ */ __commonJSMin(((exports) => {
 	var conventions = require_conventions();
 	var dom = require_dom();
@@ -51356,7 +51480,7 @@ var require_dom_parser = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.DOMParser = DOMParser;
 }));
 //#endregion
-//#region node_modules/.pnpm/@xmldom+xmldom@0.8.13/node_modules/@xmldom/xmldom/lib/index.js
+//#region node_modules/.pnpm/@xmldom+xmldom@0.8.14/node_modules/@xmldom/xmldom/lib/index.js
 var require_lib$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	var dom = require_dom();
 	exports.DOMImplementation = dom.DOMImplementation;
@@ -51364,7 +51488,7 @@ var require_lib$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.DOMParser = require_dom_parser().DOMParser;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/base-xml.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/base-xml.js
 var require_base_xml = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.BaseXml = void 0;
@@ -53241,8 +53365,10 @@ var require_xpath = /* @__PURE__ */ __commonJSMin(((exports) => {
 					break;
 				case Step.PARENT:
 					m = null;
-					if (xpc.contextNode !== xpc.virtualRoot) if (xpc.contextNode.nodeType == NodeTypes.ATTRIBUTE_NODE) m = PathExpr.getOwnerElement(xpc.contextNode);
-					else m = xpc.contextNode.parentNode;
+					if (xpc.contextNode !== xpc.virtualRoot) {
+						if (xpc.contextNode.nodeType == NodeTypes.ATTRIBUTE_NODE) m = PathExpr.getOwnerElement(xpc.contextNode);
+						else m = xpc.contextNode.parentNode;
+					}
 					if (m != null && step.nodeTest.matches(m, xpc)) newNodes.push(m);
 					break;
 				case Step.PRECEDING:
@@ -53262,10 +53388,7 @@ var require_xpath = /* @__PURE__ */ __commonJSMin(((exports) => {
 					if (xpc.contextNode === xpc.virtualRoot) break;
 					for (var m = xpc.contextNode.previousSibling; m != null; m = m.previousSibling) if (step.nodeTest.matches(m, xpc)) newNodes.push(m);
 					break;
-				case Step.SELF:
-					if (step.nodeTest.matches(xpc.contextNode, xpc)) newNodes.push(xpc.contextNode);
-					break;
-				default:
+				case Step.SELF: if (step.nodeTest.matches(xpc.contextNode, xpc)) newNodes.push(xpc.contextNode);
 			}
 			return newNodes;
 		};
@@ -53913,19 +54036,22 @@ var require_xpath = /* @__PURE__ */ __commonJSMin(((exports) => {
 			if (n === this.node) return false;
 			var o = nodeOrder(n, this.node);
 			var ret = false;
-			if (o == -1) if (this.left == null) {
-				this.left = new AVLTree(n);
-				ret = true;
-			} else {
-				ret = this.left.add(n);
-				if (ret) this.balance();
-			}
-			else if (o == 1) if (this.right == null) {
-				this.right = new AVLTree(n);
-				ret = true;
-			} else {
-				ret = this.right.add(n);
-				if (ret) this.balance();
+			if (o == -1) {
+				if (this.left == null) {
+					this.left = new AVLTree(n);
+					ret = true;
+				} else {
+					ret = this.left.add(n);
+					if (ret) this.balance();
+				}
+			} else if (o == 1) {
+				if (this.right == null) {
+					this.right = new AVLTree(n);
+					ret = true;
+				} else {
+					ret = this.right.add(n);
+					if (ret) this.balance();
+				}
 			}
 			if (ret) this.getDepthFromChildren();
 			return ret;
@@ -54588,13 +54714,11 @@ var require_xpath = /* @__PURE__ */ __commonJSMin(((exports) => {
 					}
 					break;
 				case XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE:
-				case XPathResult.ORDERED_NODE_SNAPSHOT_TYPE:
-					if (v.constructor === XNodeSet) {
-						this.nodes = v.toArray();
-						this.snapshotLength = this.nodes.length;
-						return;
-					}
-					break;
+				case XPathResult.ORDERED_NODE_SNAPSHOT_TYPE: if (v.constructor === XNodeSet) {
+					this.nodes = v.toArray();
+					this.snapshotLength = this.nodes.length;
+					return;
+				}
 			}
 			throw new XPathException(XPathException.TYPE_ERR);
 		}
@@ -54862,7 +54986,7 @@ var require_xpath = /* @__PURE__ */ __commonJSMin(((exports) => {
 	})(typeof exports === "undefined" ? {} : exports);
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/generic-xml.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/generic-xml.js
 var require_generic_xml = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.GenericXml = void 0;
@@ -54887,7 +55011,7 @@ var require_generic_xml = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.GenericXml = GenericXml;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/java/pom-xml.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/java/pom-xml.js
 var require_pom_xml = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.parseDependencyNode = exports.PomXml = void 0;
@@ -54977,7 +55101,7 @@ var require_pom_xml = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.parseDependencyNode = parseDependencyNode;
 }));
 //#endregion
-//#region node_modules/.pnpm/js-yaml@4.3.0/node_modules/js-yaml/lib/common.js
+//#region node_modules/.pnpm/js-yaml@4.3.1/node_modules/js-yaml/lib/common.js
 var require_common$3 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	function isNothing(subject) {
 		return typeof subject === "undefined" || subject === null;
@@ -55016,7 +55140,7 @@ var require_common$3 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports.extend = extend;
 }));
 //#endregion
-//#region node_modules/.pnpm/js-yaml@4.3.0/node_modules/js-yaml/lib/exception.js
+//#region node_modules/.pnpm/js-yaml@4.3.1/node_modules/js-yaml/lib/exception.js
 var require_exception = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	function formatError(exception, compact) {
 		let where = "";
@@ -55044,7 +55168,7 @@ var require_exception = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = YAMLException;
 }));
 //#endregion
-//#region node_modules/.pnpm/js-yaml@4.3.0/node_modules/js-yaml/lib/snippet.js
+//#region node_modules/.pnpm/js-yaml@4.3.1/node_modules/js-yaml/lib/snippet.js
 var require_snippet = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const common = require_common$3();
 	function getLine(buffer, lineStart, lineEnd, position, maxLineLength) {
@@ -55106,7 +55230,7 @@ var require_snippet = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = makeSnippet;
 }));
 //#endregion
-//#region node_modules/.pnpm/js-yaml@4.3.0/node_modules/js-yaml/lib/type.js
+//#region node_modules/.pnpm/js-yaml@4.3.1/node_modules/js-yaml/lib/type.js
 var require_type = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const YAMLException = require_exception();
 	const TYPE_CONSTRUCTOR_OPTIONS = [
@@ -55161,7 +55285,7 @@ var require_type = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = Type;
 }));
 //#endregion
-//#region node_modules/.pnpm/js-yaml@4.3.0/node_modules/js-yaml/lib/schema.js
+//#region node_modules/.pnpm/js-yaml@4.3.1/node_modules/js-yaml/lib/schema.js
 var require_schema$3 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const YAMLException = require_exception();
 	const Type = require_type();
@@ -55229,7 +55353,7 @@ var require_schema$3 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = Schema;
 }));
 //#endregion
-//#region node_modules/.pnpm/js-yaml@4.3.0/node_modules/js-yaml/lib/type/str.js
+//#region node_modules/.pnpm/js-yaml@4.3.1/node_modules/js-yaml/lib/type/str.js
 var require_str = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = new (require_type())("tag:yaml.org,2002:str", {
 		kind: "scalar",
@@ -55239,7 +55363,7 @@ var require_str = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	});
 }));
 //#endregion
-//#region node_modules/.pnpm/js-yaml@4.3.0/node_modules/js-yaml/lib/type/seq.js
+//#region node_modules/.pnpm/js-yaml@4.3.1/node_modules/js-yaml/lib/type/seq.js
 var require_seq$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = new (require_type())("tag:yaml.org,2002:seq", {
 		kind: "sequence",
@@ -55249,7 +55373,7 @@ var require_seq$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	});
 }));
 //#endregion
-//#region node_modules/.pnpm/js-yaml@4.3.0/node_modules/js-yaml/lib/type/map.js
+//#region node_modules/.pnpm/js-yaml@4.3.1/node_modules/js-yaml/lib/type/map.js
 var require_map$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = new (require_type())("tag:yaml.org,2002:map", {
 		kind: "mapping",
@@ -55259,7 +55383,7 @@ var require_map$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	});
 }));
 //#endregion
-//#region node_modules/.pnpm/js-yaml@4.3.0/node_modules/js-yaml/lib/schema/failsafe.js
+//#region node_modules/.pnpm/js-yaml@4.3.1/node_modules/js-yaml/lib/schema/failsafe.js
 var require_failsafe = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = new (require_schema$3())({ explicit: [
 		require_str(),
@@ -55268,7 +55392,7 @@ var require_failsafe = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	] });
 }));
 //#endregion
-//#region node_modules/.pnpm/js-yaml@4.3.0/node_modules/js-yaml/lib/type/null.js
+//#region node_modules/.pnpm/js-yaml@4.3.1/node_modules/js-yaml/lib/type/null.js
 var require_null$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const Type = require_type();
 	function resolveYamlNull(data) {
@@ -55308,7 +55432,7 @@ var require_null$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	});
 }));
 //#endregion
-//#region node_modules/.pnpm/js-yaml@4.3.0/node_modules/js-yaml/lib/type/bool.js
+//#region node_modules/.pnpm/js-yaml@4.3.1/node_modules/js-yaml/lib/type/bool.js
 var require_bool$2 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const Type = require_type();
 	function resolveYamlBoolean(data) {
@@ -55342,7 +55466,7 @@ var require_bool$2 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	});
 }));
 //#endregion
-//#region node_modules/.pnpm/js-yaml@4.3.0/node_modules/js-yaml/lib/type/int.js
+//#region node_modules/.pnpm/js-yaml@4.3.1/node_modules/js-yaml/lib/type/int.js
 var require_int$2 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const common = require_common$3();
 	const Type = require_type();
@@ -55451,7 +55575,7 @@ var require_int$2 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	});
 }));
 //#endregion
-//#region node_modules/.pnpm/js-yaml@4.3.0/node_modules/js-yaml/lib/type/float.js
+//#region node_modules/.pnpm/js-yaml@4.3.1/node_modules/js-yaml/lib/type/float.js
 var require_float$2 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const common = require_common$3();
 	const Type = require_type();
@@ -55505,7 +55629,7 @@ var require_float$2 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	});
 }));
 //#endregion
-//#region node_modules/.pnpm/js-yaml@4.3.0/node_modules/js-yaml/lib/schema/json.js
+//#region node_modules/.pnpm/js-yaml@4.3.1/node_modules/js-yaml/lib/schema/json.js
 var require_json = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = require_failsafe().extend({ implicit: [
 		require_null$1(),
@@ -55515,12 +55639,12 @@ var require_json = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	] });
 }));
 //#endregion
-//#region node_modules/.pnpm/js-yaml@4.3.0/node_modules/js-yaml/lib/schema/core.js
+//#region node_modules/.pnpm/js-yaml@4.3.1/node_modules/js-yaml/lib/schema/core.js
 var require_core = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = require_json();
 }));
 //#endregion
-//#region node_modules/.pnpm/js-yaml@4.3.0/node_modules/js-yaml/lib/type/timestamp.js
+//#region node_modules/.pnpm/js-yaml@4.3.1/node_modules/js-yaml/lib/type/timestamp.js
 var require_timestamp$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const Type = require_type();
 	const YAML_DATE_REGEXP = /* @__PURE__ */ new RegExp("^([0-9][0-9][0-9][0-9])-([0-9][0-9])-([0-9][0-9])$");
@@ -55571,7 +55695,7 @@ var require_timestamp$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	});
 }));
 //#endregion
-//#region node_modules/.pnpm/js-yaml@4.3.0/node_modules/js-yaml/lib/type/merge.js
+//#region node_modules/.pnpm/js-yaml@4.3.1/node_modules/js-yaml/lib/type/merge.js
 var require_merge$2 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const Type = require_type();
 	function resolveYamlMerge(data) {
@@ -55583,7 +55707,7 @@ var require_merge$2 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	});
 }));
 //#endregion
-//#region node_modules/.pnpm/js-yaml@4.3.0/node_modules/js-yaml/lib/type/binary.js
+//#region node_modules/.pnpm/js-yaml@4.3.1/node_modules/js-yaml/lib/type/binary.js
 var require_binary$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const Type = require_type();
 	const BASE64_MAP = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=\n\r";
@@ -55670,25 +55794,27 @@ var require_binary$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	});
 }));
 //#endregion
-//#region node_modules/.pnpm/js-yaml@4.3.0/node_modules/js-yaml/lib/type/omap.js
+//#region node_modules/.pnpm/js-yaml@4.3.1/node_modules/js-yaml/lib/type/omap.js
 var require_omap$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const Type = require_type();
 	const _hasOwnProperty = Object.prototype.hasOwnProperty;
 	const _toString = Object.prototype.toString;
 	function resolveYamlOmap(data) {
 		if (data === null) return true;
-		const objectKeys = [];
+		const objectKeys = {};
 		const object = data;
 		for (let index = 0, length = object.length; index < length; index += 1) {
 			const pair = object[index];
 			let pairHasKey = false;
 			if (_toString.call(pair) !== "[object Object]") return false;
 			let pairKey;
-			for (pairKey in pair) if (_hasOwnProperty.call(pair, pairKey)) if (!pairHasKey) pairHasKey = true;
-			else return false;
+			for (pairKey in pair) if (_hasOwnProperty.call(pair, pairKey)) {
+				if (!pairHasKey) pairHasKey = true;
+				else return false;
+			}
 			if (!pairHasKey) return false;
-			if (objectKeys.indexOf(pairKey) === -1) objectKeys.push(pairKey);
-			else return false;
+			if (_hasOwnProperty.call(objectKeys, pairKey)) return false;
+			Object.defineProperty(objectKeys, pairKey, { value: true });
 		}
 		return true;
 	}
@@ -55702,7 +55828,7 @@ var require_omap$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	});
 }));
 //#endregion
-//#region node_modules/.pnpm/js-yaml@4.3.0/node_modules/js-yaml/lib/type/pairs.js
+//#region node_modules/.pnpm/js-yaml@4.3.1/node_modules/js-yaml/lib/type/pairs.js
 var require_pairs$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const Type = require_type();
 	const _toString = Object.prototype.toString;
@@ -55737,7 +55863,7 @@ var require_pairs$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	});
 }));
 //#endregion
-//#region node_modules/.pnpm/js-yaml@4.3.0/node_modules/js-yaml/lib/type/set.js
+//#region node_modules/.pnpm/js-yaml@4.3.1/node_modules/js-yaml/lib/type/set.js
 var require_set$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const Type = require_type();
 	const _hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -55759,7 +55885,7 @@ var require_set$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	});
 }));
 //#endregion
-//#region node_modules/.pnpm/js-yaml@4.3.0/node_modules/js-yaml/lib/schema/default.js
+//#region node_modules/.pnpm/js-yaml@4.3.1/node_modules/js-yaml/lib/schema/default.js
 var require_default = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = require_core().extend({
 		implicit: [require_timestamp$1(), require_merge$2()],
@@ -55772,7 +55898,7 @@ var require_default = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	});
 }));
 //#endregion
-//#region node_modules/.pnpm/js-yaml@4.3.0/node_modules/js-yaml/lib/loader.js
+//#region node_modules/.pnpm/js-yaml@4.3.1/node_modules/js-yaml/lib/loader.js
 var require_loader = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const common = require_common$3();
 	const YAMLException = require_exception();
@@ -56025,9 +56151,10 @@ var require_loader = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 		if (typeof keyNode === "object" && _class(keyNode) === "[object Object]") keyNode = "[object Object]";
 		keyNode = String(keyNode);
 		if (_result === null) _result = {};
-		if (keyTag === "tag:yaml.org,2002:merge") if (Array.isArray(valueNode)) for (let index = 0, quantity = valueNode.length; index < quantity; index += 1) mergeMappings(state, _result, valueNode[index], overridableKeys);
-		else mergeMappings(state, _result, valueNode, overridableKeys);
-		else {
+		if (keyTag === "tag:yaml.org,2002:merge") {
+			if (Array.isArray(valueNode)) for (let index = 0, quantity = valueNode.length; index < quantity; index += 1) mergeMappings(state, _result, valueNode[index], overridableKeys);
+			else mergeMappings(state, _result, valueNode, overridableKeys);
+		} else {
 			if (!state.json && !_hasOwnProperty.call(overridableKeys, keyNode) && _hasOwnProperty.call(_result, keyNode)) {
 				state.line = startLine || state.line;
 				state.lineStart = startLineStart || state.lineStart;
@@ -56312,14 +56439,16 @@ var require_loader = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 		state.result = "";
 		while (ch !== 0) {
 			ch = state.input.charCodeAt(++state.position);
-			if (ch === 43 || ch === 45) if (CHOMPING_CLIP === chomping) chomping = ch === 43 ? CHOMPING_KEEP : CHOMPING_STRIP;
-			else throwError(state, "repeat of a chomping mode identifier");
-			else if ((tmp = fromDecimalCode(ch)) >= 0) if (tmp === 0) throwError(state, "bad explicit indentation width of a block scalar; it cannot be less than one");
-			else if (!detectedIndent) {
-				textIndent = nodeIndent + tmp - 1;
-				detectedIndent = true;
-			} else throwError(state, "repeat of an indentation width identifier");
-			else break;
+			if (ch === 43 || ch === 45) {
+				if (CHOMPING_CLIP === chomping) chomping = ch === 43 ? CHOMPING_KEEP : CHOMPING_STRIP;
+				else throwError(state, "repeat of a chomping mode identifier");
+			} else if ((tmp = fromDecimalCode(ch)) >= 0) {
+				if (tmp === 0) throwError(state, "bad explicit indentation width of a block scalar; it cannot be less than one");
+				else if (!detectedIndent) {
+					textIndent = nodeIndent + tmp - 1;
+					detectedIndent = true;
+				} else throwError(state, "repeat of an indentation width identifier");
+			} else break;
 		}
 		if (isWhiteSpace(ch)) {
 			do
@@ -56350,16 +56479,17 @@ var require_loader = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 				}
 				break;
 			}
-			if (folding) if (isWhiteSpace(ch)) {
-				atMoreIndented = true;
-				state.result += common.repeat("\n", didReadContent ? 1 + emptyLines : emptyLines);
-			} else if (atMoreIndented) {
-				atMoreIndented = false;
-				state.result += common.repeat("\n", emptyLines + 1);
-			} else if (emptyLines === 0) {
-				if (didReadContent) state.result += " ";
-			} else state.result += common.repeat("\n", emptyLines);
-			else state.result += common.repeat("\n", didReadContent ? 1 + emptyLines : emptyLines);
+			if (folding) {
+				if (isWhiteSpace(ch)) {
+					atMoreIndented = true;
+					state.result += common.repeat("\n", didReadContent ? 1 + emptyLines : emptyLines);
+				} else if (atMoreIndented) {
+					atMoreIndented = false;
+					state.result += common.repeat("\n", emptyLines + 1);
+				} else if (emptyLines === 0) {
+					if (didReadContent) state.result += " ";
+				} else state.result += common.repeat("\n", emptyLines);
+			} else state.result += common.repeat("\n", didReadContent ? 1 + emptyLines : emptyLines);
 			didReadContent = true;
 			detectedIndent = true;
 			emptyLines = 0;
@@ -56488,8 +56618,10 @@ var require_loader = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 					_keyLineStart = state.lineStart;
 					_keyPos = state.position;
 				}
-				if (composeNode(state, nodeIndent, CONTEXT_BLOCK_OUT, true, allowCompact)) if (atExplicitKey) keyNode = state.result;
-				else valueNode = state.result;
+				if (composeNode(state, nodeIndent, CONTEXT_BLOCK_OUT, true, allowCompact)) {
+					if (atExplicitKey) keyNode = state.result;
+					else valueNode = state.result;
+				}
 				if (!atExplicitKey) {
 					storeMappingPair(state, _result, overridableKeys, keyTag, keyNode, valueNode, _keyLine, _keyLineStart, _keyPos);
 					keyTag = keyNode = valueNode = null;
@@ -56537,12 +56669,14 @@ var require_loader = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			} else throwError(state, "unexpected end of the stream within a verbatim tag");
 		} else {
 			while (ch !== 0 && !isWsOrEol(ch)) {
-				if (ch === 33) if (!isNamed) {
-					tagHandle = state.input.slice(_position - 1, state.position + 1);
-					if (!PATTERN_TAG_HANDLE.test(tagHandle)) throwError(state, "named tag handle cannot contain such characters");
-					isNamed = true;
-					_position = state.position + 1;
-				} else throwError(state, "tag suffix cannot contain exclamation marks");
+				if (ch === 33) {
+					if (!isNamed) {
+						tagHandle = state.input.slice(_position - 1, state.position + 1);
+						if (!PATTERN_TAG_HANDLE.test(tagHandle)) throwError(state, "named tag handle cannot contain such characters");
+						isNamed = true;
+						_position = state.position + 1;
+					} else throwError(state, "tag suffix cannot contain exclamation marks");
+				}
 				ch = state.input.charCodeAt(++state.position);
 			}
 			tagName = state.input.slice(_position, state.position);
@@ -56646,21 +56780,22 @@ var require_loader = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			if (CONTEXT_FLOW_IN === nodeContext || CONTEXT_FLOW_OUT === nodeContext) flowIndent = parentIndent;
 			else flowIndent = parentIndent + 1;
 			blockIndent = state.position - state.lineStart;
-			if (indentStatus === 1) if (allowBlockCollections && (readBlockSequence(state, blockIndent) || readBlockMapping(state, blockIndent, flowIndent)) || readFlowCollection(state, flowIndent)) hasContent = true;
-			else {
-				const ch = state.input.charCodeAt(state.position);
-				if (propertyStart !== null && allowBlockStyles && !allowBlockCollections && ch !== 124 && ch !== 62 && tryReadBlockMappingFromProperty(state, propertyStart, propertyStart.position - propertyStart.lineStart, flowIndent)) hasContent = true;
-				else if (allowBlockScalars && readBlockScalar(state, flowIndent) || readSingleQuotedScalar(state, flowIndent) || readDoubleQuotedScalar(state, flowIndent)) hasContent = true;
-				else if (readAlias(state)) {
-					hasContent = true;
-					if (state.tag !== null || state.anchor !== null) throwError(state, "alias node should not have any properties");
-				} else if (readPlainScalar(state, flowIndent, CONTEXT_FLOW_IN === nodeContext)) {
-					hasContent = true;
-					if (state.tag === null) state.tag = "?";
+			if (indentStatus === 1) {
+				if (allowBlockCollections && (readBlockSequence(state, blockIndent) || readBlockMapping(state, blockIndent, flowIndent)) || readFlowCollection(state, flowIndent)) hasContent = true;
+				else {
+					const ch = state.input.charCodeAt(state.position);
+					if (propertyStart !== null && allowBlockStyles && !allowBlockCollections && ch !== 124 && ch !== 62 && tryReadBlockMappingFromProperty(state, propertyStart, propertyStart.position - propertyStart.lineStart, flowIndent)) hasContent = true;
+					else if (allowBlockScalars && readBlockScalar(state, flowIndent) || readSingleQuotedScalar(state, flowIndent) || readDoubleQuotedScalar(state, flowIndent)) hasContent = true;
+					else if (readAlias(state)) {
+						hasContent = true;
+						if (state.tag !== null || state.anchor !== null) throwError(state, "alias node should not have any properties");
+					} else if (readPlainScalar(state, flowIndent, CONTEXT_FLOW_IN === nodeContext)) {
+						hasContent = true;
+						if (state.tag === null) state.tag = "?";
+					}
+					if (state.anchor !== null) storeAnchor(state, state.anchor, state.result);
 				}
-				if (state.anchor !== null) storeAnchor(state, state.anchor, state.result);
-			}
-			else if (indentStatus === 0) hasContent = allowBlockCollections && readBlockSequence(state, blockIndent);
+			} else if (indentStatus === 0) hasContent = allowBlockCollections && readBlockSequence(state, blockIndent);
 		}
 		if (state.tag === null) {
 			if (state.anchor !== null) storeAnchor(state, state.anchor, state.result);
@@ -56791,7 +56926,7 @@ var require_loader = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports.load = load;
 }));
 //#endregion
-//#region node_modules/.pnpm/js-yaml@4.3.0/node_modules/js-yaml/lib/dumper.js
+//#region node_modules/.pnpm/js-yaml@4.3.1/node_modules/js-yaml/lib/dumper.js
 var require_dumper = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const common = require_common$3();
 	const YAMLException = require_exception();
@@ -57166,8 +57301,10 @@ var require_dumper = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			if (state.replacer) objectValue = state.replacer.call(object, objectKey, objectValue);
 			if (!writeNode(state, level + 1, objectKey, true, true, true)) continue;
 			const explicitPair = state.tag !== null && state.tag !== "?" || state.dump && state.dump.length > 1024;
-			if (explicitPair) if (state.dump && CHAR_LINE_FEED === state.dump.charCodeAt(0)) pairBuffer += "?";
-			else pairBuffer += "? ";
+			if (explicitPair) {
+				if (state.dump && CHAR_LINE_FEED === state.dump.charCodeAt(0)) pairBuffer += "?";
+				else pairBuffer += "? ";
+			}
 			pairBuffer += state.dump;
 			if (explicitPair) pairBuffer += generateNextLine(state, level);
 			if (!writeNode(state, level + 1, objectValue, true, explicitPair)) continue;
@@ -57184,9 +57321,10 @@ var require_dumper = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 		for (let index = 0, length = typeList.length; index < length; index += 1) {
 			const type = typeList[index];
 			if ((type.instanceOf || type.predicate) && (!type.instanceOf || typeof object === "object" && object instanceof type.instanceOf) && (!type.predicate || type.predicate(object))) {
-				if (explicit) if (type.multi && type.representName) state.tag = type.representName(object);
-				else state.tag = type.tag;
-				else state.tag = "?";
+				if (explicit) {
+					if (type.multi && type.representName) state.tag = type.representName(object);
+					else state.tag = type.tag;
+				} else state.tag = "?";
 				if (type.represent) {
 					const style = state.styleMap[type.tag] || type.defaultStyle;
 					let _result;
@@ -57218,22 +57356,24 @@ var require_dumper = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 		if (duplicate && state.usedDuplicates[duplicateIndex]) state.dump = "*ref_" + duplicateIndex;
 		else {
 			if (objectOrArray && duplicate && !state.usedDuplicates[duplicateIndex]) state.usedDuplicates[duplicateIndex] = true;
-			if (type === "[object Object]") if (block && Object.keys(state.dump).length !== 0) {
-				writeBlockMapping(state, level, state.dump, compact);
-				if (duplicate) state.dump = "&ref_" + duplicateIndex + state.dump;
-			} else {
-				writeFlowMapping(state, level, state.dump);
-				if (duplicate) state.dump = "&ref_" + duplicateIndex + " " + state.dump;
-			}
-			else if (type === "[object Array]") if (block && state.dump.length !== 0) {
-				if (state.noArrayIndent && !isblockseq && level > 0) writeBlockSequence(state, level - 1, state.dump, compact);
-				else writeBlockSequence(state, level, state.dump, compact);
-				if (duplicate) state.dump = "&ref_" + duplicateIndex + state.dump;
-			} else {
-				writeFlowSequence(state, level, state.dump);
-				if (duplicate) state.dump = "&ref_" + duplicateIndex + " " + state.dump;
-			}
-			else if (type === "[object String]") {
+			if (type === "[object Object]") {
+				if (block && Object.keys(state.dump).length !== 0) {
+					writeBlockMapping(state, level, state.dump, compact);
+					if (duplicate) state.dump = "&ref_" + duplicateIndex + state.dump;
+				} else {
+					writeFlowMapping(state, level, state.dump);
+					if (duplicate) state.dump = "&ref_" + duplicateIndex + " " + state.dump;
+				}
+			} else if (type === "[object Array]") {
+				if (block && state.dump.length !== 0) {
+					if (state.noArrayIndent && !isblockseq && level > 0) writeBlockSequence(state, level - 1, state.dump, compact);
+					else writeBlockSequence(state, level, state.dump, compact);
+					if (duplicate) state.dump = "&ref_" + duplicateIndex + state.dump;
+				} else {
+					writeFlowSequence(state, level, state.dump);
+					if (duplicate) state.dump = "&ref_" + duplicateIndex + " " + state.dump;
+				}
+			} else if (type === "[object String]") {
 				if (state.tag !== "?") writeScalar(state, state.dump, level, iskey, inblock);
 			} else if (type === "[object Undefined]") return false;
 			else {
@@ -57285,7 +57425,7 @@ var require_dumper = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports.dump = dump;
 }));
 //#endregion
-//#region node_modules/.pnpm/js-yaml@4.3.0/node_modules/js-yaml/index.js
+//#region node_modules/.pnpm/js-yaml@4.3.1/node_modules/js-yaml/index.js
 var require_js_yaml = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const loader = require_loader();
 	const dumper = require_dumper();
@@ -57324,7 +57464,7 @@ var require_js_yaml = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports.safeDump = renamed("safeDump", "dump");
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/generic-yaml.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/generic-yaml.js
 var require_generic_yaml = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.GenericYaml = void 0;
@@ -57991,9 +58131,10 @@ var require_toml_parser = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 				else throw this.error(new TomlError("Unexpected character, expected \"inf\", \"+inf\" or \"-inf\""));
 			}
 			parseInf2() {
-				if (this.char === CHAR_f) if (this.state.buf === "-") return this.return(-Infinity);
-				else return this.return(Infinity);
-				else throw this.error(new TomlError("Unexpected character, expected \"inf\", \"+inf\" or \"-inf\""));
+				if (this.char === CHAR_f) {
+					if (this.state.buf === "-") return this.return(-Infinity);
+					else return this.return(Infinity);
+				} else throw this.error(new TomlError("Unexpected character, expected \"inf\", \"+inf\" or \"-inf\""));
 			}
 			parseNan() {
 				if (this.char === CHAR_a) return this.next(this.parseNan2);
@@ -58277,10 +58418,11 @@ var require_toml_parser = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 				else return this.returnNow(Integer(this.state.buf));
 			}
 			parseDateTimeOnly() {
-				if (this.state.buf.length < 4) if (isDigit(this.char)) return this.consume();
-				else if (this.char === CHAR_COLON) return this.goto(this.parseOnlyTimeHour);
-				else throw this.error(new TomlError("Expected digit while parsing year part of a date"));
-				else if (this.char === CHAR_HYPHEN) return this.goto(this.parseDateTime);
+				if (this.state.buf.length < 4) {
+					if (isDigit(this.char)) return this.consume();
+					else if (this.char === CHAR_COLON) return this.goto(this.parseOnlyTimeHour);
+					else throw this.error(new TomlError("Expected digit while parsing year part of a date"));
+				} else if (this.char === CHAR_HYPHEN) return this.goto(this.parseDateTime);
 				else throw this.error(new TomlError("Expected hyphen (-) while parsing year part of date"));
 			}
 			parseNumberBaseOrDateTime() {
@@ -58571,7 +58713,7 @@ var require_toml_parser = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	}
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/util/toml-edit.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/util/toml-edit.js
 var require_toml_edit = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.replaceTomlValue = exports.parseWith = void 0;
@@ -58657,7 +58799,7 @@ var require_toml_edit = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.replaceTomlValue = replaceTomlValue;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/generic-toml.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/generic-toml.js
 var require_generic_toml = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.GenericToml = void 0;
@@ -58709,7 +58851,7 @@ var require_generic_toml = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.GenericToml = GenericToml;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/base.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/base.js
 var require_base = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.BaseStrategy = void 0;
@@ -59126,7 +59268,7 @@ var require_base = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.BaseStrategy = BaseStrategy;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/bazel.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/bazel.js
 var require_bazel = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Bazel = void 0;
@@ -59161,7 +59303,7 @@ var require_bazel = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.Bazel = Bazel;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/dart/pubspec-yaml.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/dart/pubspec-yaml.js
 var require_pubspec_yaml = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.PubspecYaml = void 0;
@@ -59196,7 +59338,7 @@ var require_pubspec_yaml = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.PubspecYaml = PubspecYaml;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/dart.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/dart.js
 var require_dart = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Dart = void 0;
@@ -59243,7 +59385,7 @@ var require_dart = /* @__PURE__ */ __commonJSMin(((exports) => {
 	};
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/dotnet/apis.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/dotnet/apis.js
 var require_apis = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Apis = void 0;
@@ -59277,7 +59419,7 @@ var require_apis = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.Apis = Apis;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/dotnet-yoshi.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/dotnet-yoshi.js
 var require_dotnet_yoshi = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.DotnetYoshi = void 0;
@@ -59400,7 +59542,7 @@ var require_dotnet_yoshi = /* @__PURE__ */ __commonJSMin(((exports) => {
 	};
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/elixir/elixir-mix-exs.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/elixir/elixir-mix-exs.js
 var require_elixir_mix_exs = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.ElixirMixExs = void 0;
@@ -59429,7 +59571,7 @@ var require_elixir_mix_exs = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.ElixirMixExs = ElixirMixExs;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/elixir.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/elixir.js
 var require_elixir = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Elixir = void 0;
@@ -59459,7 +59601,7 @@ var require_elixir = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.Elixir = Elixir;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/changelog-json.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/changelog-json.js
 var require_changelog_json = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.ChangelogJson = void 0;
@@ -59531,7 +59673,7 @@ var require_changelog_json = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.ChangelogJson = ChangelogJson;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/node/package-json.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/node/package-json.js
 var require_package_json = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.updateDependencies = exports.NPM_PROTOCOL_REGEXP = exports.newVersionWithRange = exports.PackageJson = void 0;
@@ -59610,7 +59752,7 @@ var require_package_json = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.updateDependencies = updateDependencies;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/node/package-lock-json.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/node/package-lock-json.js
 var require_package_lock_json = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.PackageLockJson = void 0;
@@ -59659,7 +59801,7 @@ var require_package_lock_json = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.PackageLockJson = PackageLockJson;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/node/samples-package-json.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/node/samples-package-json.js
 var require_samples_package_json = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.SamplesPackageJson = void 0;
@@ -59695,7 +59837,7 @@ var require_samples_package_json = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.SamplesPackageJson = SamplesPackageJson;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/util/filter-commits.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/util/filter-commits.js
 var require_filter_commits = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.filterCommits = void 0;
@@ -59778,7 +59920,7 @@ var require_filter_commits = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.filterCommits = filterCommits;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/node.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/node.js
 var require_node$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Node = void 0;
@@ -59865,7 +60007,7 @@ var require_node$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.Node = Node;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/expo/app-json.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/expo/app-json.js
 var require_app_json = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.AppJson = void 0;
@@ -59912,7 +60054,7 @@ var require_app_json = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.AppJson = AppJson;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/expo.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/expo.js
 var require_expo = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Expo = void 0;
@@ -59951,7 +60093,7 @@ var require_expo = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.Expo = Expo;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/go/version-go.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/go/version-go.js
 var require_version_go = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.VersionGo = void 0;
@@ -59964,7 +60106,7 @@ var require_version_go = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.VersionGo = VersionGo;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/go.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/go.js
 var require_go = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Go = void 0;
@@ -59999,7 +60141,7 @@ var require_go = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.Go = Go;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/go-yoshi.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/go-yoshi.js
 var require_go_yoshi = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.GoYoshi = void 0;
@@ -60096,25 +60238,27 @@ var require_go_yoshi = /* @__PURE__ */ __commonJSMin(((exports) => {
 			const ignoredSubmodules = await this.getIgnoredSubModules();
 			return commits.filter((commit) => {
 				var _a, _b;
-				if (this.repository.owner === "googleapis" && this.repository.repo === "google-api-go-client" && REGEN_PR_REGEX.test(commit.message)) if (regenCommit) {
-					const match = commit.message.match(REGEN_ISSUE_REGEX);
-					if ((_a = match === null || match === void 0 ? void 0 : match.groups) === null || _a === void 0 ? void 0 : _a.pr) regenCommit.references.push({
-						action: "refs",
-						issue: match.groups.pr,
-						prefix: "#"
-					});
-					return false;
-				} else {
-					commit.sha = "";
-					regenCommit = commit;
-					const match = commit.bareMessage.match(REGEN_ISSUE_REGEX);
-					if ((_b = match === null || match === void 0 ? void 0 : match.groups) === null || _b === void 0 ? void 0 : _b.pr) {
-						regenCommit.references.push({
+				if (this.repository.owner === "googleapis" && this.repository.repo === "google-api-go-client" && REGEN_PR_REGEX.test(commit.message)) {
+					if (regenCommit) {
+						const match = commit.message.match(REGEN_ISSUE_REGEX);
+						if ((_a = match === null || match === void 0 ? void 0 : match.groups) === null || _a === void 0 ? void 0 : _a.pr) regenCommit.references.push({
 							action: "refs",
 							issue: match.groups.pr,
 							prefix: "#"
 						});
-						regenCommit.bareMessage = match.groups.prefix.trim();
+						return false;
+					} else {
+						commit.sha = "";
+						regenCommit = commit;
+						const match = commit.bareMessage.match(REGEN_ISSUE_REGEX);
+						if ((_b = match === null || match === void 0 ? void 0 : match.groups) === null || _b === void 0 ? void 0 : _b.pr) {
+							regenCommit.references.push({
+								action: "refs",
+								issue: match.groups.pr,
+								prefix: "#"
+							});
+							regenCommit.bareMessage = match.groups.prefix.trim();
+						}
 					}
 				}
 				if (this.repository.owner === "googleapis" && this.repository.repo === "google-cloud-go") {
@@ -60384,9 +60528,10 @@ var require_visit = /* @__PURE__ */ __commonJSMin(((exports) => {
 	function replaceNode(key, path, node) {
 		const parent = path[path.length - 1];
 		if (identity.isCollection(parent)) parent.items[key] = node;
-		else if (identity.isPair(parent)) if (key === "key") parent.key = node;
-		else parent.value = node;
-		else if (identity.isDocument(parent)) parent.contents = node;
+		else if (identity.isPair(parent)) {
+			if (key === "key") parent.key = node;
+			else parent.value = node;
+		} else if (identity.isDocument(parent)) parent.contents = node;
 		else {
 			const pt = identity.isAlias(parent) ? "alias" : "scalar";
 			throw new Error(`Cannot replace node with ${pt} parent`);
@@ -60443,7 +60588,6 @@ var require_directives = /* @__PURE__ */ __commonJSMin(((exports) => {
 						version: "1.2"
 					};
 					this.tags = Object.assign({}, Directives.defaultTags);
-					break;
 			}
 			return res;
 		}
@@ -60638,30 +60782,32 @@ var require_applyReviver = /* @__PURE__ */ __commonJSMin(((exports) => {
 	* Includes extensions for handling Map and Set objects.
 	*/
 	function applyReviver(reviver, obj, key, val) {
-		if (val && typeof val === "object") if (Array.isArray(val)) for (let i = 0, len = val.length; i < len; ++i) {
-			const v0 = val[i];
-			const v1 = applyReviver(reviver, val, String(i), v0);
-			if (v1 === void 0) delete val[i];
-			else if (v1 !== v0) val[i] = v1;
-		}
-		else if (val instanceof Map) for (const k of Array.from(val.keys())) {
-			const v0 = val.get(k);
-			const v1 = applyReviver(reviver, val, k, v0);
-			if (v1 === void 0) val.delete(k);
-			else if (v1 !== v0) val.set(k, v1);
-		}
-		else if (val instanceof Set) for (const v0 of Array.from(val)) {
-			const v1 = applyReviver(reviver, val, v0, v0);
-			if (v1 === void 0) val.delete(v0);
-			else if (v1 !== v0) {
-				val.delete(v0);
-				val.add(v1);
+		if (val && typeof val === "object") {
+			if (Array.isArray(val)) for (let i = 0, len = val.length; i < len; ++i) {
+				const v0 = val[i];
+				const v1 = applyReviver(reviver, val, String(i), v0);
+				if (v1 === void 0) delete val[i];
+				else if (v1 !== v0) val[i] = v1;
 			}
-		}
-		else for (const [k, v0] of Object.entries(val)) {
-			const v1 = applyReviver(reviver, val, k, v0);
-			if (v1 === void 0) delete val[k];
-			else if (v1 !== v0) val[k] = v1;
+			else if (val instanceof Map) for (const k of Array.from(val.keys())) {
+				const v0 = val.get(k);
+				const v1 = applyReviver(reviver, val, k, v0);
+				if (v1 === void 0) val.delete(k);
+				else if (v1 !== v0) val.set(k, v1);
+			}
+			else if (val instanceof Set) for (const v0 of Array.from(val)) {
+				const v1 = applyReviver(reviver, val, v0, v0);
+				if (v1 === void 0) val.delete(v0);
+				else if (v1 !== v0) {
+					val.delete(v0);
+					val.add(v1);
+				}
+			}
+			else for (const [k, v0] of Object.entries(val)) {
+				const v1 = applyReviver(reviver, val, k, v0);
+				if (v1 === void 0) delete val[k];
+				else if (v1 !== v0) val[k] = v1;
+			}
 		}
 		return reviver.call(obj, key, val);
 	}
@@ -61082,8 +61228,10 @@ var require_foldFlowLines = /* @__PURE__ */ __commonJSMin(((exports) => {
 		const folds = [];
 		const escapedFolds = {};
 		let end = lineWidth - indent.length;
-		if (typeof indentAtStart === "number") if (indentAtStart > lineWidth - Math.max(2, minContentWidth)) folds.push(0);
-		else end = lineWidth - indentAtStart;
+		if (typeof indentAtStart === "number") {
+			if (indentAtStart > lineWidth - Math.max(2, minContentWidth)) folds.push(0);
+			else end = lineWidth - indentAtStart;
+		}
 		let split = void 0;
 		let prev = void 0;
 		let overflow = false;
@@ -61120,23 +61268,25 @@ var require_foldFlowLines = /* @__PURE__ */ __commonJSMin(((exports) => {
 					const next = text[i + 1];
 					if (next && next !== " " && next !== "\n" && next !== "	") split = i;
 				}
-				if (i >= end) if (split) {
-					folds.push(split);
-					end = split + endStep;
-					split = void 0;
-				} else if (mode === FOLD_QUOTED) {
-					while (prev === " " || prev === "	") {
-						prev = ch;
-						ch = text[i += 1];
-						overflow = true;
-					}
-					const j = i > escEnd + 1 ? i - 2 : escStart - 1;
-					if (escapedFolds[j]) return text;
-					folds.push(j);
-					escapedFolds[j] = true;
-					end = j + endStep;
-					split = void 0;
-				} else overflow = true;
+				if (i >= end) {
+					if (split) {
+						folds.push(split);
+						end = split + endStep;
+						split = void 0;
+					} else if (mode === FOLD_QUOTED) {
+						while (prev === " " || prev === "	") {
+							prev = ch;
+							ch = text[i += 1];
+							overflow = true;
+						}
+						const j = i > escEnd + 1 ? i - 2 : escStart - 1;
+						if (escapedFolds[j]) return text;
+						folds.push(j);
+						escapedFolds[j] = true;
+						end = j + endStep;
+						split = void 0;
+					} else overflow = true;
+				}
 			}
 			prev = ch;
 		}
@@ -61295,7 +61445,7 @@ var require_stringifyString = /* @__PURE__ */ __commonJSMin(((exports) => {
 	}
 	let blockEndNewlines;
 	try {
-		blockEndNewlines = /* @__PURE__ */ new RegExp("(^|(?<!\n))\n+(?!\n|$)", "g");
+		blockEndNewlines = new RegExp("(^|(?<!\n))\n+(?!\n|$)", "g");
 	} catch {
 		blockEndNewlines = /\n+(?!\n|$)/g;
 	}
@@ -61616,8 +61766,10 @@ var require_log = /* @__PURE__ */ __commonJSMin(((exports) => {
 		if (logLevel === "debug") console.log(...messages);
 	}
 	function warn(logLevel, warning) {
-		if (logLevel === "debug" || logLevel === "warn") if (typeof node_process$2.emitWarning === "function") node_process$2.emitWarning(warning);
-		else console.warn(warning);
+		if (logLevel === "debug" || logLevel === "warn") {
+			if (typeof node_process$2.emitWarning === "function") node_process$2.emitWarning(warning);
+			else console.warn(warning);
+		}
 	}
 	exports.debug = debug;
 	exports.warn = warn;
@@ -62444,11 +62596,12 @@ var require_pairs = /* @__PURE__ */ __commonJSMin(((exports) => {
 		if (iterable && Symbol.iterator in Object(iterable)) for (let it of iterable) {
 			if (typeof replacer === "function") it = replacer.call(iterable, String(i++), it);
 			let key, value;
-			if (Array.isArray(it)) if (it.length === 2) {
-				key = it[0];
-				value = it[1];
-			} else throw new TypeError(`Expected [key, value] tuple: ${it}`);
-			else if (it && it instanceof Object) {
+			if (Array.isArray(it)) {
+				if (it.length === 2) {
+					key = it[0];
+					value = it[1];
+				} else throw new TypeError(`Expected [key, value] tuple: ${it}`);
+			} else if (it && it instanceof Object) {
 				const keys = Object.keys(it);
 				if (keys.length === 1) {
 					key = keys[0];
@@ -62524,8 +62677,10 @@ var require_omap = /* @__PURE__ */ __commonJSMin(((exports) => {
 		resolve(seq, onError) {
 			const pairs$1 = pairs.resolvePairs(seq, onError);
 			const seenKeys = [];
-			for (const { key } of pairs$1.items) if (identity.isScalar(key)) if (seenKeys.includes(key.value)) onError(`Ordered maps must not include duplicate keys: ${key.value}`);
-			else seenKeys.push(key.value);
+			for (const { key } of pairs$1.items) if (identity.isScalar(key)) {
+				if (seenKeys.includes(key.value)) onError(`Ordered maps must not include duplicate keys: ${key.value}`);
+				else seenKeys.push(key.value);
+			}
 			return Object.assign(new YAMLOMap(), pairs$1);
 		},
 		createNode: (schema, iterable, ctx) => YAMLOMap.from(schema, iterable, ctx)
@@ -62621,9 +62776,7 @@ var require_int = /* @__PURE__ */ __commonJSMin(((exports) => {
 				case 8:
 					str = `0o${str}`;
 					break;
-				case 16:
-					str = `0x${str}`;
-					break;
+				case 16: str = `0x${str}`;
 			}
 			const n = BigInt(str);
 			return sign === "-" ? BigInt(-1) * n : n;
@@ -62738,9 +62891,10 @@ var require_set = /* @__PURE__ */ __commonJSMin(((exports) => {
 		tag: "tag:yaml.org,2002:set",
 		createNode: (schema, iterable, ctx) => YAMLSet.from(schema, iterable, ctx),
 		resolve(map, onError) {
-			if (identity.isMap(map)) if (map.hasAllNullValues(true)) return Object.assign(new YAMLSet(), map);
-			else onError("Set items must all have null values");
-			else onError("Expected a mapping for this tag");
+			if (identity.isMap(map)) {
+				if (map.hasAllNullValues(true)) return Object.assign(new YAMLSet(), map);
+				else onError("Set items must all have null values");
+			} else onError("Expected a mapping for this tag");
 			return map;
 		}
 	};
@@ -62932,10 +63086,12 @@ var require_tags = /* @__PURE__ */ __commonJSMin(((exports) => {
 		const schemaTags = schemas.get(schemaName);
 		if (schemaTags && !customTags) return addMergeTag && !schemaTags.includes(merge.merge) ? schemaTags.concat(merge.merge) : schemaTags.slice();
 		let tags = schemaTags;
-		if (!tags) if (Array.isArray(customTags)) tags = [];
-		else {
-			const keys = Array.from(schemas.keys()).filter((key) => key !== "yaml11").map((key) => JSON.stringify(key)).join(", ");
-			throw new Error(`Unknown schema "${schemaName}"; use one of ${keys} or define customTags array`);
+		if (!tags) {
+			if (Array.isArray(customTags)) tags = [];
+			else {
+				const keys = Array.from(schemas.keys()).filter((key) => key !== "yaml11").map((key) => JSON.stringify(key)).join(", ");
+				throw new Error(`Unknown schema "${schemaName}"; use one of ${keys} or define customTags array`);
+			}
 		}
 		if (Array.isArray(customTags)) for (const tag of customTags) tags = tags.concat(tag);
 		else if (typeof customTags === "function") tags = customTags(tags.slice());
@@ -63024,14 +63180,15 @@ var require_stringifyDocument = /* @__PURE__ */ __commonJSMin(((exports) => {
 			if ((body[0] === "|" || body[0] === ">") && lines[lines.length - 1] === "---") lines[lines.length - 1] = `--- ${body}`;
 			else lines.push(body);
 		} else lines.push(stringify.stringify(doc.contents, ctx));
-		if (doc.directives?.docEnd) if (doc.comment) {
-			const cs = commentString(doc.comment);
-			if (cs.includes("\n")) {
-				lines.push("...");
-				lines.push(stringifyComment.indentComment(cs, ""));
-			} else lines.push(`... ${cs}`);
-		} else lines.push("...");
-		else {
+		if (doc.directives?.docEnd) {
+			if (doc.comment) {
+				const cs = commentString(doc.comment);
+				if (cs.includes("\n")) {
+					lines.push("...");
+					lines.push(stringifyComment.indentComment(cs, ""));
+				} else lines.push(`... ${cs}`);
+			} else lines.push("...");
+		} else {
 			let dc = doc.comment;
 			if (dc && chompKeep) dc = dc.replace(/^\n+/, "");
 			if (dc) {
@@ -63570,8 +63727,10 @@ var require_resolve_block_map = /* @__PURE__ */ __commonJSMin(((exports) => {
 				}
 				if (!keyProps.anchor && !keyProps.tag && !sep) {
 					commentEnd = keyProps.end;
-					if (keyProps.comment) if (map.comment) map.comment += "\n" + keyProps.comment;
-					else map.comment = keyProps.comment;
+					if (keyProps.comment) {
+						if (map.comment) map.comment += "\n" + keyProps.comment;
+						else map.comment = keyProps.comment;
+					}
 					continue;
 				}
 				if (keyProps.newlineAfterProp || utilContainsNewline.containsNewline(key)) onError(key ?? start[start.length - 1], "MULTILINE_IMPLICIT_KEY", "Implicit keys need to be on a single line");
@@ -63604,8 +63763,10 @@ var require_resolve_block_map = /* @__PURE__ */ __commonJSMin(((exports) => {
 				map.items.push(pair);
 			} else {
 				if (implicitKey) onError(keyNode.range, "MISSING_CHAR", "Implicit map keys need to be followed by map values");
-				if (valueProps.comment) if (keyNode.comment) keyNode.comment += "\n" + valueProps.comment;
-				else keyNode.comment = valueProps.comment;
+				if (valueProps.comment) {
+					if (keyNode.comment) keyNode.comment += "\n" + valueProps.comment;
+					else keyNode.comment = valueProps.comment;
+				}
 				const pair = new Pair.Pair(keyNode);
 				if (ctx.options.keepSourceTokens) pair.srcToken = collItem;
 				map.items.push(pair);
@@ -63642,12 +63803,15 @@ var require_resolve_block_seq = /* @__PURE__ */ __commonJSMin(((exports) => {
 				parentIndent: bs.indent,
 				startOnNewline: true
 			});
-			if (!props.found) if (props.anchor || props.tag || value) if (value?.type === "block-seq") onError(props.end, "BAD_INDENT", "All sequence items must start at the same column");
-			else onError(offset, "MISSING_CHAR", "Sequence item without - indicator");
-			else {
-				commentEnd = props.end;
-				if (props.comment) seq.comment = props.comment;
-				continue;
+			if (!props.found) {
+				if (props.anchor || props.tag || value) {
+					if (value?.type === "block-seq") onError(props.end, "BAD_INDENT", "All sequence items must start at the same column");
+					else onError(offset, "MISSING_CHAR", "Sequence item without - indicator");
+				} else {
+					commentEnd = props.end;
+					if (props.comment) seq.comment = props.comment;
+					continue;
+				}
 			}
 			const node = value ? composeNode(ctx, value, props, onError) : composeEmptyNode(ctx, props.end, start, null, props, onError);
 			if (ctx.schema.compat) utilFlowIndentCheck.flowIndentCheck(bs.indent, value, onError);
@@ -63739,8 +63903,10 @@ var require_resolve_flow_collection = /* @__PURE__ */ __commonJSMin(((exports) =
 				if (!props.anchor && !props.tag && !sep && !value) {
 					if (i === 0 && props.comma) onError(props.comma, "UNEXPECTED_TOKEN", `Unexpected , in ${fcName}`);
 					else if (i < fc.items.length - 1) onError(props.start, "UNEXPECTED_TOKEN", `Unexpected empty item in ${fcName}`);
-					if (props.comment) if (coll.comment) coll.comment += "\n" + props.comment;
-					else coll.comment = props.comment;
+					if (props.comment) {
+						if (coll.comment) coll.comment += "\n" + props.comment;
+						else coll.comment = props.comment;
+					}
 					offset = props.end;
 					continue;
 				}
@@ -63800,13 +63966,17 @@ var require_resolve_flow_collection = /* @__PURE__ */ __commonJSMin(((exports) =
 						}
 						if (props.start < valueProps.found.offset - 1024) onError(valueProps.found, "KEY_OVER_1024_CHARS", "The : indicator must be at most 1024 chars after the start of an implicit flow sequence key");
 					}
-				} else if (value) if ("source" in value && value.source?.[0] === ":") onError(value, "MISSING_CHAR", `Missing space after : in ${fcName}`);
-				else onError(valueProps.start, "MISSING_CHAR", `Missing , or : between ${fcName} items`);
+				} else if (value) {
+					if ("source" in value && value.source?.[0] === ":") onError(value, "MISSING_CHAR", `Missing space after : in ${fcName}`);
+					else onError(valueProps.start, "MISSING_CHAR", `Missing , or : between ${fcName} items`);
+				}
 				const valueNode = value ? composeNode(ctx, value, valueProps, onError) : valueProps.found ? composeEmptyNode(ctx, valueProps.end, sep, null, valueProps, onError) : null;
 				if (valueNode) {
 					if (isBlock(value)) onError(valueNode.range, "BLOCK_IN_FLOW", blockMsg);
-				} else if (valueProps.comment) if (keyNode.comment) keyNode.comment += "\n" + valueProps.comment;
-				else keyNode.comment = valueProps.comment;
+				} else if (valueProps.comment) {
+					if (keyNode.comment) keyNode.comment += "\n" + valueProps.comment;
+					else keyNode.comment = valueProps.comment;
+				}
 				const pair = new Pair.Pair(keyNode, valueNode);
 				if (ctx.options.keepSourceTokens) pair.srcToken = collItem;
 				if (isMap) {
@@ -63840,8 +64010,10 @@ var require_resolve_flow_collection = /* @__PURE__ */ __commonJSMin(((exports) =
 		}
 		if (ee.length > 0) {
 			const end = resolveEnd.resolveEnd(ee, cePos, ctx.options.strict, onError);
-			if (end.comment) if (coll.comment) coll.comment += "\n" + end.comment;
-			else coll.comment = end.comment;
+			if (end.comment) {
+				if (coll.comment) coll.comment += "\n" + end.comment;
+				else coll.comment = end.comment;
+			}
 			coll.range = [
 				fc.offset,
 				cePos,
@@ -63989,9 +64161,10 @@ var require_resolve_block_scalar = /* @__PURE__ */ __commonJSMin(((exports) => {
 				value += sep + indent.slice(trimIndent) + content;
 				sep = "\n";
 				prevMoreIndented = true;
-			} else if (content === "") if (sep === "\n") value += "\n";
-			else sep = "\n";
-			else {
+			} else if (content === "") {
+				if (sep === "\n") value += "\n";
+				else sep = "\n";
+			} else {
 				value += sep + content;
 				sep = " ";
 				prevMoreIndented = false;
@@ -64152,9 +64325,7 @@ var require_resolve_flow_scalar = /* @__PURE__ */ __commonJSMin(((exports) => {
 				badChar = `block scalar indicator ${source[0]}`;
 				break;
 			case "@":
-			case "`":
-				badChar = `reserved character ${source[0]}`;
-				break;
+			case "`": badChar = `reserved character ${source[0]}`;
 		}
 		if (badChar) onError(0, "BAD_SCALAR_START", `Plain value cannot start with ${badChar}`);
 		return foldLines(source);
@@ -64173,8 +64344,8 @@ var require_resolve_flow_scalar = /* @__PURE__ */ __commonJSMin(((exports) => {
 		*/
 		let first, line;
 		try {
-			first = /* @__PURE__ */ new RegExp("(.*?)(?<![ 	])[ 	]*\r?\n", "sy");
-			line = /* @__PURE__ */ new RegExp("[ 	]*(.*?)(?:(?<![ 	])[ 	]*)?\r?\n", "sy");
+			first = new RegExp("(.*?)(?<![ 	])[ 	]*\r?\n", "sy");
+			line = new RegExp("[ 	]*(.*?)(?:(?<![ 	])[ 	]*)?\r?\n", "sy");
 		} catch {
 			first = /(.*?)[ \t]*\r?\n/sy;
 			line = /[ \t]*(.*?)[ \t]*\r?\n/sy;
@@ -64186,9 +64357,10 @@ var require_resolve_flow_scalar = /* @__PURE__ */ __commonJSMin(((exports) => {
 		let pos = first.lastIndex;
 		line.lastIndex = pos;
 		while (match = line.exec(source)) {
-			if (match[1] === "") if (sep === "\n") res += sep;
-			else sep = "\n";
-			else {
+			if (match[1] === "") {
+				if (sep === "\n") res += sep;
+				else sep = "\n";
+			} else {
 				res += sep + match[1];
 				sep = " ";
 			}
@@ -64324,8 +64496,10 @@ var require_compose_scalar = /* @__PURE__ */ __commonJSMin(((exports) => {
 	function findScalarTagByName(schema, value, tagName, tagToken, onError) {
 		if (tagName === "!") return schema[identity.SCALAR];
 		const matchWithTest = [];
-		for (const tag of schema.tags) if (!tag.collection && tag.tag === tagName) if (tag.default && tag.test) matchWithTest.push(tag);
-		else return tag;
+		for (const tag of schema.tags) if (!tag.collection && tag.tag === tagName) {
+			if (tag.default && tag.test) matchWithTest.push(tag);
+			else return tag;
+		}
 		for (const tag of matchWithTest) if (tag.test?.test(value)) return tag;
 		const kt = schema.knownTags[tagName];
 		if (kt && !kt.collection) {
@@ -64423,8 +64597,10 @@ var require_compose_node = /* @__PURE__ */ __commonJSMin(((exports) => {
 		if (anchor && node.anchor === "") onError(anchor, "BAD_ALIAS", "Anchor cannot be an empty string");
 		if (atKey && ctx.options.stringKeys && (!identity.isScalar(node) || typeof node.value !== "string" || node.tag && node.tag !== "tag:yaml.org,2002:str")) onError(tag ?? token, "NON_STRING_KEY", "With stringKeys, all keys must be strings");
 		if (spaceBefore) node.spaceBefore = true;
-		if (comment) if (token.type === "scalar" && token.source === "") node.comment = comment;
-		else node.commentBefore = comment;
+		if (comment) {
+			if (token.type === "scalar" && token.source === "") node.comment = comment;
+			else node.commentBefore = comment;
+		}
 		if (ctx.options.keepSourceTokens && isSrcToken) node.srcToken = token;
 		return node;
 	}
@@ -65613,11 +65789,13 @@ var require_lexer = /* @__PURE__ */ __commonJSMin(((exports) => {
 				end = i;
 			} else if (isEmpty(ch)) {
 				let next = this.buffer[i + 1];
-				if (ch === "\r") if (next === "\n") {
-					i += 1;
-					ch = "\n";
-					next = this.buffer[i + 1];
-				} else end = i;
+				if (ch === "\r") {
+					if (next === "\n") {
+						i += 1;
+						ch = "\n";
+						next = this.buffer[i + 1];
+					} else end = i;
+				}
 				if (next === "#" || inFlow && flowIndicatorChars.has(next)) break;
 				if (ch === "\n") {
 					const cs = this.continueScalar(i + 1);
@@ -65834,9 +66012,10 @@ var require_parser = /* @__PURE__ */ __commonJSMin(((exports) => {
 			for (const it of fc.items) if (it.sep && !it.value && !includesToken(it.start, "explicit-key-ind") && !includesToken(it.sep, "map-value-ind")) {
 				if (it.key) it.value = it.key;
 				delete it.key;
-				if (isFlowToken(it.value)) if (it.value.end) arrayPushArray(it.value.end, it.sep);
-				else it.value.end = it.sep;
-				else arrayPushArray(it.start, it.sep);
+				if (isFlowToken(it.value)) {
+					if (it.value.end) arrayPushArray(it.value.end, it.sep);
+					else it.value.end = it.sep;
+				} else arrayPushArray(it.start, it.sep);
 				delete it.sep;
 			}
 		}
@@ -66271,13 +66450,31 @@ var require_parser = /* @__PURE__ */ __commonJSMin(((exports) => {
 						this.onKeyLine = true;
 						return;
 					case "map-value-ind":
-						if (it.explicitKey) if (!it.sep) if (includesToken(it.start, "newline")) Object.assign(it, {
-							key: null,
-							sep: [this.sourceToken]
-						});
-						else {
-							const start = getFirstKeyStartProps(it.start);
-							this.stack.push({
+						if (it.explicitKey) {
+							if (!it.sep) {
+								if (includesToken(it.start, "newline")) Object.assign(it, {
+									key: null,
+									sep: [this.sourceToken]
+								});
+								else {
+									const start = getFirstKeyStartProps(it.start);
+									this.stack.push({
+										type: "block-map",
+										offset: this.offset,
+										indent: this.indent,
+										items: [{
+											start,
+											key: null,
+											sep: [this.sourceToken]
+										}]
+									});
+								}
+							} else if (it.value) map.items.push({
+								start: [],
+								key: null,
+								sep: [this.sourceToken]
+							});
+							else if (includesToken(it.sep, "map-value-ind")) this.stack.push({
 								type: "block-map",
 								offset: this.offset,
 								indent: this.indent,
@@ -66287,42 +66484,26 @@ var require_parser = /* @__PURE__ */ __commonJSMin(((exports) => {
 									sep: [this.sourceToken]
 								}]
 							});
-						}
-						else if (it.value) map.items.push({
-							start: [],
-							key: null,
-							sep: [this.sourceToken]
-						});
-						else if (includesToken(it.sep, "map-value-ind")) this.stack.push({
-							type: "block-map",
-							offset: this.offset,
-							indent: this.indent,
-							items: [{
-								start,
-								key: null,
-								sep: [this.sourceToken]
-							}]
-						});
-						else if (isFlowToken(it.key) && !includesToken(it.sep, "newline")) {
-							const start = getFirstKeyStartProps(it.start);
-							const key = it.key;
-							const sep = it.sep;
-							sep.push(this.sourceToken);
-							delete it.key;
-							delete it.sep;
-							this.stack.push({
-								type: "block-map",
-								offset: this.offset,
-								indent: this.indent,
-								items: [{
-									start,
-									key,
-									sep
-								}]
-							});
-						} else if (start.length > 0) it.sep = it.sep.concat(start, this.sourceToken);
-						else it.sep.push(this.sourceToken);
-						else if (!it.sep) Object.assign(it, {
+							else if (isFlowToken(it.key) && !includesToken(it.sep, "newline")) {
+								const start = getFirstKeyStartProps(it.start);
+								const key = it.key;
+								const sep = it.sep;
+								sep.push(this.sourceToken);
+								delete it.key;
+								delete it.sep;
+								this.stack.push({
+									type: "block-map",
+									offset: this.offset,
+									indent: this.indent,
+									items: [{
+										start,
+										key,
+										sep
+									}]
+								});
+							} else if (start.length > 0) it.sep = it.sep.concat(start, this.sourceToken);
+							else it.sep.push(this.sourceToken);
+						} else if (!it.sep) Object.assign(it, {
 							key: null,
 							sep: [this.sourceToken]
 						});
@@ -66695,8 +66876,10 @@ var require_public_api = /* @__PURE__ */ __commonJSMin(((exports) => {
 		const doc = parseDocument(src, options);
 		if (!doc) return null;
 		doc.warnings.forEach((warning) => log.warn(doc.options.logLevel, warning));
-		if (doc.errors.length > 0) if (doc.options.logLevel !== "silent") throw doc.errors[0];
-		else doc.errors = [];
+		if (doc.errors.length > 0) {
+			if (doc.options.logLevel !== "silent") throw doc.errors[0];
+			else doc.errors = [];
+		}
 		return doc.toJS(Object.assign({ reviver: _reviver }, options));
 	}
 	function stringify(value, replacer, options) {
@@ -66770,7 +66953,7 @@ var require_dist$3 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.visitAsync = visit.visitAsync;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/librarian-yaml.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/librarian-yaml.js
 var require_librarian_yaml = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.LibrarianYamlUpdater = void 0;
@@ -66783,7 +66966,7 @@ var require_librarian_yaml = /* @__PURE__ */ __commonJSMin(((exports) => {
 	var LibrarianYamlUpdater = class extends default_1.DefaultUpdater {
 		constructor(options) {
 			super(options);
-			this.specialArtifacts = /* @__PURE__ */ new Map([["google-cloud-java", "google-cloud-java"]]);
+			this.specialArtifacts = /* @__PURE__ */ new Map([["google-cloud-java", "google-cloud-java"], ["google-cloud-pom-parent", "google-cloud-pom-parent"]]);
 			this.packagePath = options.packagePath;
 			this.component = options.component;
 		}
@@ -66814,7 +66997,7 @@ var require_librarian_yaml = /* @__PURE__ */ __commonJSMin(((exports) => {
 						isPreview = true;
 						newVersion = this.version;
 					} else {
-						const isGoMatch = this.packagePath && libraryJSON.name === this.packagePath || this.component && libraryJSON.name === this.component;
+						const isGoMatch = this.packagePath && libraryJSON.name === this.packagePath || (!this.packagePath || this.packagePath === ".") && this.component && libraryJSON.name === this.component;
 						const isPythonNodeMatch = this.packagePath && this.deriveOutputDirectory(libraryJSON) === this.packagePath;
 						if (isGoMatch || isPythonNodeMatch) newVersion = this.version;
 					}
@@ -66867,7 +67050,7 @@ var require_librarian_yaml = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.LibrarianYamlUpdater = LibrarianYamlUpdater;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/go-librarian.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/go-librarian.js
 var require_go_librarian = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.GoLibrarian = void 0;
@@ -66930,7 +67113,7 @@ var require_go_librarian = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.GoLibrarian = GoLibrarian;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/helm/chart-yaml.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/helm/chart-yaml.js
 var require_chart_yaml = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.ChartYaml = void 0;
@@ -66958,7 +67141,7 @@ var require_chart_yaml = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.ChartYaml = ChartYaml;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/helm.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/helm.js
 var require_helm = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Helm = void 0;
@@ -67005,7 +67188,7 @@ var require_helm = /* @__PURE__ */ __commonJSMin(((exports) => {
 	};
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/versioning-strategies/java-snapshot.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/versioning-strategies/java-snapshot.js
 var require_java_snapshot = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.JavaSnapshot = void 0;
@@ -67056,7 +67239,7 @@ var require_java_snapshot = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.JavaSnapshot = JavaSnapshot;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/versioning-strategies/java-add-snapshot.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/versioning-strategies/java-add-snapshot.js
 var require_java_add_snapshot = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.JavaAddSnapshot = void 0;
@@ -67099,7 +67282,7 @@ var require_java_add_snapshot = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.JavaAddSnapshot = JavaAddSnapshot;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/java/java-released.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/java/java-released.js
 var require_java_released = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.JavaReleased = void 0;
@@ -67144,7 +67327,7 @@ var require_java_released = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.JavaReleased = JavaReleased;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/java.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/java.js
 var require_java = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Java = void 0;
@@ -67321,7 +67504,7 @@ var require_java = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.Java = Java;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/java/java-update.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/java/java-update.js
 var require_java_update = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.JavaUpdate = void 0;
@@ -67376,7 +67559,7 @@ var require_java_update = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.JavaUpdate = JavaUpdate;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/java/versions-manifest.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/java/versions-manifest.js
 var require_versions_manifest = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.VersionsManifest = void 0;
@@ -67430,7 +67613,7 @@ var require_versions_manifest = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.VersionsManifest = VersionsManifest;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/java-yoshi.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/java-yoshi.js
 var require_java_yoshi = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.JavaYoshi = void 0;
@@ -67597,7 +67780,7 @@ var require_java_yoshi = /* @__PURE__ */ __commonJSMin(((exports) => {
 	}
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/java-yoshi-mono-repo.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/java-yoshi-mono-repo.js
 var require_java_yoshi_mono_repo = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.JavaYoshiMonoRepo = void 0;
@@ -67844,7 +68027,7 @@ var require_java_yoshi_mono_repo = /* @__PURE__ */ __commonJSMin(((exports) => {
 	}
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/krm/krm-blueprint-version.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/krm/krm-blueprint-version.js
 var require_krm_blueprint_version = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.KRMBlueprintVersion = void 0;
@@ -67871,7 +68054,7 @@ var require_krm_blueprint_version = /* @__PURE__ */ __commonJSMin(((exports) => 
 	exports.KRMBlueprintVersion = KRMBlueprintVersion;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/krm-blueprint.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/krm-blueprint.js
 var require_krm_blueprint = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.KRMBlueprint = void 0;
@@ -67917,7 +68100,7 @@ var require_krm_blueprint = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.KRMBlueprint = KRMBlueprint;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/maven.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/maven.js
 var require_maven = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Maven = void 0;
@@ -67963,7 +68146,7 @@ var require_maven = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.Maven = Maven;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/node-librarian.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/node-librarian.js
 var require_node_librarian = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.NodeLibrarian = void 0;
@@ -68059,7 +68242,7 @@ var require_node_librarian = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.NodeLibrarian = NodeLibrarian;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/ocaml/opam.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/ocaml/opam.js
 var require_opam = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Opam = void 0;
@@ -68083,7 +68266,7 @@ var require_opam = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.Opam = Opam;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/ocaml/esy-json.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/ocaml/esy-json.js
 var require_esy_json = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.EsyJson = void 0;
@@ -68109,7 +68292,7 @@ var require_esy_json = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.EsyJson = EsyJson;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/ocaml/dune-project.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/ocaml/dune-project.js
 var require_dune_project = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.DuneProject = void 0;
@@ -68133,7 +68316,7 @@ var require_dune_project = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.DuneProject = DuneProject;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/ocaml.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/ocaml.js
 var require_ocaml = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.OCaml = void 0;
@@ -68190,7 +68373,7 @@ var require_ocaml = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.OCaml = OCaml;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/php/root-composer-update-packages.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/php/root-composer-update-packages.js
 var require_root_composer_update_packages = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.RootComposerUpdatePackages = void 0;
@@ -68237,7 +68420,7 @@ var require_root_composer_update_packages = /* @__PURE__ */ __commonJSMin(((expo
 	exports.RootComposerUpdatePackages = RootComposerUpdatePackages;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/php.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/php.js
 var require_php = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.PHP = void 0;
@@ -68334,7 +68517,7 @@ var require_php = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.PHP = PHP;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/php/php-client-version.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/php/php-client-version.js
 var require_php_client_version = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.PHPClientVersion = void 0;
@@ -68355,7 +68538,7 @@ var require_php_client_version = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.PHPClientVersion = PHPClientVersion;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/php-yoshi.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/php-yoshi.js
 var require_php_yoshi = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.PHPYoshi = void 0;
@@ -68599,7 +68782,30 @@ ${entryUpdate}
 	}
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/python/setup-cfg.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/php-librarian.js
+var require_php_librarian = /* @__PURE__ */ __commonJSMin(((exports) => {
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.PHPLibrarian = void 0;
+	const php_yoshi_1 = require_php_yoshi();
+	const librarian_yaml_1 = require_librarian_yaml();
+	var PHPLibrarian = class extends php_yoshi_1.PHPYoshi {
+		async buildUpdates(options) {
+			const updates = await super.buildUpdates(options);
+			updates.push({
+				path: "librarian.yaml",
+				createIfMissing: false,
+				updater: new librarian_yaml_1.LibrarianYamlUpdater({
+					version: options.newVersion,
+					packagePath: this.path
+				})
+			});
+			return updates;
+		}
+	};
+	exports.PHPLibrarian = PHPLibrarian;
+}));
+//#endregion
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/python/setup-cfg.js
 var require_setup_cfg = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.SetupCfg = void 0;
@@ -68620,7 +68826,7 @@ var require_setup_cfg = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.SetupCfg = SetupCfg;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/python/setup-py.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/python/setup-py.js
 var require_setup_py = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.SetupPy = void 0;
@@ -68991,7 +69197,7 @@ var require_toml = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.stringify = require_stringify();
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/python/pyproject-toml.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/python/pyproject-toml.js
 var require_pyproject_toml = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.PyProjectToml = exports.parsePyProject = void 0;
@@ -69031,7 +69237,7 @@ var require_pyproject_toml = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.PyProjectToml = PyProjectToml;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/python/python-file-with-version.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/python/python-file-with-version.js
 var require_python_file_with_version = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.PythonFileWithVersion = void 0;
@@ -69052,7 +69258,7 @@ var require_python_file_with_version = /* @__PURE__ */ __commonJSMin(((exports) 
 	exports.PythonFileWithVersion = PythonFileWithVersion;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/python.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/python.js
 var require_python = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Python = void 0;
@@ -69223,7 +69429,7 @@ var require_python = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.Python = Python;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/python-librarian.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/python-librarian.js
 var require_python_librarian = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.PythonLibrarian = void 0;
@@ -69246,7 +69452,7 @@ var require_python_librarian = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.PythonLibrarian = PythonLibrarian;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/r/news.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/r/news.js
 var require_news = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.News = void 0;
@@ -69262,9 +69468,10 @@ var require_news = /* @__PURE__ */ __commonJSMin(((exports) => {
 		updateContent(content) {
 			content = content || "";
 			const lastEntryIndex = content.search(this.versionHeaderRegex);
-			if (lastEntryIndex === -1) if (content) return `${this.changelogEntry}\n\n${adjustHeaders(content).trim()}\n`;
-			else return `${this.changelogEntry}\n`;
-			else {
+			if (lastEntryIndex === -1) {
+				if (content) return `${this.changelogEntry}\n\n${adjustHeaders(content).trim()}\n`;
+				else return `${this.changelogEntry}\n`;
+			} else {
 				const before = content.slice(0, lastEntryIndex);
 				const after = content.slice(lastEntryIndex);
 				return `${before}\n${this.changelogEntry}\n${after}`.trim() + "\n";
@@ -69277,7 +69484,7 @@ var require_news = /* @__PURE__ */ __commonJSMin(((exports) => {
 	}
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/r/description.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/r/description.js
 var require_description = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.DescriptionUpdater = void 0;
@@ -69298,7 +69505,7 @@ var require_description = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.DescriptionUpdater = DescriptionUpdater;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/r.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/r.js
 var require_r = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.R = void 0;
@@ -69394,7 +69601,7 @@ var require_r = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.R = R;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/util/indent-commit.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/util/indent-commit.js
 var require_indent_commit = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.indentCommit = void 0;
@@ -69415,7 +69622,7 @@ var require_indent_commit = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.indentCommit = indentCommit;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/ruby/common.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/ruby/common.js
 var require_common$2 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.resolveRubyGemfileLockVersion = exports.stringifyRubyVersion = exports.RUBY_VERSION_REGEX = void 0;
@@ -69444,7 +69651,7 @@ var require_common$2 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.resolveRubyGemfileLockVersion = resolveRubyGemfileLockVersion;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/ruby/version-rb.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/ruby/version-rb.js
 var require_version_rb = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.VersionRB = void 0;
@@ -69467,7 +69674,7 @@ var require_version_rb = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.VersionRB = VersionRB;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/ruby/gemfile-lock.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/ruby/gemfile-lock.js
 var require_gemfile_lock = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.GemfileLock = exports.buildGemfileLockVersionRegex = void 0;
@@ -69505,7 +69712,7 @@ var require_gemfile_lock = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.GemfileLock = GemfileLock;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/ruby.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/ruby.js
 var require_ruby = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Ruby = void 0;
@@ -69558,7 +69765,7 @@ var require_ruby = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.Ruby = Ruby;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/ruby-yoshi.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/ruby-yoshi.js
 var require_ruby_yoshi = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.RubyYoshi = void 0;
@@ -69665,7 +69872,30 @@ var require_ruby_yoshi = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.RubyYoshi = RubyYoshi;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/rust/common.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/ruby-librarian.js
+var require_ruby_librarian = /* @__PURE__ */ __commonJSMin(((exports) => {
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.RubyLibrarian = void 0;
+	const ruby_yoshi_1 = require_ruby_yoshi();
+	const librarian_yaml_1 = require_librarian_yaml();
+	var RubyLibrarian = class extends ruby_yoshi_1.RubyYoshi {
+		async buildUpdates(options) {
+			const updates = await super.buildUpdates(options);
+			updates.push({
+				path: "librarian.yaml",
+				createIfMissing: false,
+				updater: new librarian_yaml_1.LibrarianYamlUpdater({
+					version: options.newVersion,
+					packagePath: this.path
+				})
+			});
+			return updates;
+		}
+	};
+	exports.RubyLibrarian = RubyLibrarian;
+}));
+//#endregion
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/rust/common.js
 var require_common$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.parseCargoLockfile = exports.parseCargoManifest = exports.DEP_KINDS = void 0;
@@ -69689,7 +69919,7 @@ var require_common$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.parseCargoLockfile = parseCargoLockfile;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/rust/cargo-toml.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/rust/cargo-toml.js
 var require_cargo_toml = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.CargoToml = void 0;
@@ -69762,7 +69992,7 @@ var require_cargo_toml = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.CargoToml = CargoToml;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/rust/cargo-lock.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/rust/cargo-lock.js
 var require_cargo_lock = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.CargoLock = void 0;
@@ -69807,7 +70037,7 @@ var require_cargo_lock = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.CargoLock = CargoLock;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/rust.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/rust.js
 var require_rust = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Rust = void 0;
@@ -69923,7 +70153,7 @@ var require_rust = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.Rust = Rust;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/sfdx/sfdx-project-json.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/sfdx/sfdx-project-json.js
 var require_sfdx_project_json = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.SfdxProjectJson = void 0;
@@ -69951,7 +70181,7 @@ var require_sfdx_project_json = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.SfdxProjectJson = SfdxProjectJson;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/sfdx.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/sfdx.js
 var require_sfdx = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Sfdx = void 0;
@@ -69997,7 +70227,7 @@ var require_sfdx = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.Sfdx = Sfdx;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/simple.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/simple.js
 var require_simple = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Simple = void 0;
@@ -70032,7 +70262,7 @@ var require_simple = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.Simple = Simple;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/terraform/readme.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/terraform/readme.js
 var require_readme = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.ReadMe = void 0;
@@ -70053,7 +70283,7 @@ var require_readme = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.ReadMe = ReadMe;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/terraform/module-version.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/terraform/module-version.js
 var require_module_version = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.ModuleVersion = void 0;
@@ -70077,7 +70307,7 @@ var require_module_version = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.ModuleVersion = ModuleVersion;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/terraform/metadata-version.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/terraform/metadata-version.js
 var require_metadata_version = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.MetadataVersion = void 0;
@@ -70101,7 +70331,7 @@ var require_metadata_version = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.MetadataVersion = MetadataVersion;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/strategies/terraform-module.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/strategies/terraform-module.js
 var require_terraform_module = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.TerraformModule = void 0;
@@ -70157,7 +70387,7 @@ var require_terraform_module = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.TerraformModule = TerraformModule;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/versioning-strategies/dependency-manifest.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/versioning-strategies/dependency-manifest.js
 var require_dependency_manifest = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.DependencyManifest = void 0;
@@ -70183,15 +70413,19 @@ var require_dependency_manifest = /* @__PURE__ */ __commonJSMin(((exports) => {
 			let features = 0;
 			for (const dep in dependencyUpdates) {
 				const version = dependencyUpdates[dep];
-				if (version.patch === 0) if (version.minor === 0) breaking++;
-				else features++;
+				if (version.patch === 0) {
+					if (version.minor === 0) breaking++;
+					else features++;
+				}
 			}
 			let dependencyBump;
-			if (breaking > 0) if (version.isPreMajor && this.bumpMinorPreMajor) dependencyBump = new versioning_strategy_1.MinorVersionUpdate();
-			else dependencyBump = new versioning_strategy_1.MajorVersionUpdate();
-			else if (features > 0) if (version.isPreMajor && this.bumpPatchForMinorPreMajor) dependencyBump = new versioning_strategy_1.PatchVersionUpdate();
-			else dependencyBump = new versioning_strategy_1.MinorVersionUpdate();
-			else dependencyBump = new versioning_strategy_1.PatchVersionUpdate();
+			if (breaking > 0) {
+				if (version.isPreMajor && this.bumpMinorPreMajor) dependencyBump = new versioning_strategy_1.MinorVersionUpdate();
+				else dependencyBump = new versioning_strategy_1.MajorVersionUpdate();
+			} else if (features > 0) {
+				if (version.isPreMajor && this.bumpPatchForMinorPreMajor) dependencyBump = new versioning_strategy_1.PatchVersionUpdate();
+				else dependencyBump = new versioning_strategy_1.MinorVersionUpdate();
+			} else dependencyBump = new versioning_strategy_1.PatchVersionUpdate();
 			if (semver.lte(dependencyBump.bump(version).toString(), regularBump.bump(version).toString())) return regularBump;
 			else return dependencyBump;
 		}
@@ -70219,7 +70453,7 @@ var require_dependency_manifest = /* @__PURE__ */ __commonJSMin(((exports) => {
 	}
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/plugin.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/plugin.js
 var require_plugin = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.ManifestPlugin = void 0;
@@ -70265,7 +70499,7 @@ var require_plugin = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.ManifestPlugin = ManifestPlugin;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/plugins/merge.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/plugins/merge.js
 var require_merge = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Merge = void 0;
@@ -70337,7 +70571,7 @@ var require_merge = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.Merge = Merge;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/plugins/linked-versions.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/plugins/linked-versions.js
 var require_linked_versions = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.LinkedVersions = void 0;
@@ -70439,7 +70673,7 @@ var require_linked_versions = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.LinkedVersions = LinkedVersions;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/release-please-manifest.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/release-please-manifest.js
 var require_release_please_manifest = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.ReleasePleaseManifest = void 0;
@@ -70456,7 +70690,7 @@ var require_release_please_manifest = /* @__PURE__ */ __commonJSMin(((exports) =
 	exports.ReleasePleaseManifest = ReleasePleaseManifest;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/plugins/workspace.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/plugins/workspace.js
 var require_workspace = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.addPath = exports.appendDependenciesSectionToChangelog = exports.WorkspacePlugin = void 0;
@@ -70697,7 +70931,7 @@ var require_workspace = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.addPath = addPath;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/updaters/raw-content.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/updaters/raw-content.js
 var require_raw_content = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.RawContent = void 0;
@@ -70725,7 +70959,7 @@ var require_raw_content = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.RawContent = RawContent;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/plugins/cargo-workspace.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/plugins/cargo-workspace.js
 var require_cargo_workspace = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.CargoWorkspace = void 0;
@@ -70817,12 +71051,14 @@ var require_cargo_workspace = /* @__PURE__ */ __commonJSMin(((exports) => {
 				else if (update.path === (0, workspace_1.addPath)(existingCandidate.path, "Cargo.lock")) update.updater = new cargo_lock_1.CargoLock(updatedVersions);
 				return update;
 			});
-			if (dependencyNotes) if (existingCandidate.pullRequest.body.releaseData.length > 0) existingCandidate.pullRequest.body.releaseData[0].notes = (0, workspace_1.appendDependenciesSectionToChangelog)(existingCandidate.pullRequest.body.releaseData[0].notes, dependencyNotes, this.logger);
-			else existingCandidate.pullRequest.body.releaseData.push({
-				component: pkg.name,
-				version: existingCandidate.pullRequest.version,
-				notes: (0, workspace_1.appendDependenciesSectionToChangelog)("", dependencyNotes, this.logger)
-			});
+			if (dependencyNotes) {
+				if (existingCandidate.pullRequest.body.releaseData.length > 0) existingCandidate.pullRequest.body.releaseData[0].notes = (0, workspace_1.appendDependenciesSectionToChangelog)(existingCandidate.pullRequest.body.releaseData[0].notes, dependencyNotes, this.logger);
+				else existingCandidate.pullRequest.body.releaseData.push({
+					component: pkg.name,
+					version: existingCandidate.pullRequest.version,
+					notes: (0, workspace_1.appendDependenciesSectionToChangelog)("", dependencyNotes, this.logger)
+				});
+			}
 			return existingCandidate;
 		}
 		async newCandidate(pkg, updatedVersions) {
@@ -70984,7 +71220,7 @@ var require_cargo_workspace = /* @__PURE__ */ __commonJSMin(((exports) => {
 	}
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/plugins/node-workspace.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/plugins/node-workspace.js
 var require_node_workspace = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.NodeWorkspace = void 0;
@@ -71093,12 +71329,14 @@ var require_node_workspace = /* @__PURE__ */ __commonJSMin(((exports) => {
 				}
 				return update;
 			});
-			if (dependencyNotes) if (existingCandidate.pullRequest.body.releaseData.length > 0) existingCandidate.pullRequest.body.releaseData[0].notes = (0, workspace_1.appendDependenciesSectionToChangelog)(existingCandidate.pullRequest.body.releaseData[0].notes, dependencyNotes, this.logger);
-			else existingCandidate.pullRequest.body.releaseData.push({
-				component: updatedPackage.name,
-				version: existingCandidate.pullRequest.version,
-				notes: (0, workspace_1.appendDependenciesSectionToChangelog)("", dependencyNotes, this.logger)
-			});
+			if (dependencyNotes) {
+				if (existingCandidate.pullRequest.body.releaseData.length > 0) existingCandidate.pullRequest.body.releaseData[0].notes = (0, workspace_1.appendDependenciesSectionToChangelog)(existingCandidate.pullRequest.body.releaseData[0].notes, dependencyNotes, this.logger);
+				else existingCandidate.pullRequest.body.releaseData.push({
+					component: updatedPackage.name,
+					version: existingCandidate.pullRequest.version,
+					notes: (0, workspace_1.appendDependenciesSectionToChangelog)("", dependencyNotes, this.logger)
+				});
+			}
 			return existingCandidate;
 		}
 		async newCandidate(pkg, updatedVersions) {
@@ -71252,7 +71490,7 @@ var require_node_workspace = /* @__PURE__ */ __commonJSMin(((exports) => {
 	}
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/plugins/maven-workspace.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/plugins/maven-workspace.js
 var require_maven_workspace = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.MavenWorkspace = void 0;
@@ -71448,12 +71686,14 @@ var require_maven_workspace = /* @__PURE__ */ __commonJSMin(((exports) => {
 				}
 				return update;
 			});
-			if (dependencyNotes) if (existingCandidate.pullRequest.body.releaseData.length > 0) existingCandidate.pullRequest.body.releaseData[0].notes = (0, workspace_1.appendDependenciesSectionToChangelog)(existingCandidate.pullRequest.body.releaseData[0].notes, dependencyNotes, this.logger);
-			else existingCandidate.pullRequest.body.releaseData.push({
-				component: artifact.name,
-				version: existingCandidate.pullRequest.version,
-				notes: (0, workspace_1.appendDependenciesSectionToChangelog)("", dependencyNotes, this.logger)
-			});
+			if (dependencyNotes) {
+				if (existingCandidate.pullRequest.body.releaseData.length > 0) existingCandidate.pullRequest.body.releaseData[0].notes = (0, workspace_1.appendDependenciesSectionToChangelog)(existingCandidate.pullRequest.body.releaseData[0].notes, dependencyNotes, this.logger);
+				else existingCandidate.pullRequest.body.releaseData.push({
+					component: artifact.name,
+					version: existingCandidate.pullRequest.version,
+					notes: (0, workspace_1.appendDependenciesSectionToChangelog)("", dependencyNotes, this.logger)
+				});
+			}
 			return existingCandidate;
 		}
 		async newCandidate(artifact, updatedVersions) {
@@ -71597,7 +71837,7 @@ var require_maven_workspace = /* @__PURE__ */ __commonJSMin(((exports) => {
 	};
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/plugins/sentence-case.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/plugins/sentence-case.js
 var require_sentence_case = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.SentenceCase = void 0;
@@ -71647,7 +71887,7 @@ var require_sentence_case = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.SentenceCase = SentenceCase;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/plugins/group-priority.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/plugins/group-priority.js
 var require_group_priority = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.GroupPriority = void 0;
@@ -71711,7 +71951,7 @@ var require_group_priority = /* @__PURE__ */ __commonJSMin(((exports) => {
 	}
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/factories/plugin-factory.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/factories/plugin-factory.js
 var require_plugin_factory = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.getPluginTypes = exports.unregisterPlugin = exports.registerPlugin = exports.buildPlugin = void 0;
@@ -71784,7 +72024,7 @@ var require_plugin_factory = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.getPluginTypes = getPluginTypes;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/factory.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/factory.js
 var require_factory = /* @__PURE__ */ __commonJSMin(((exports) => {
 	var __createBinding = exports && exports.__createBinding || (Object.create ? (function(o, m, k, k2) {
 		if (k2 === void 0) k2 = k;
@@ -71827,11 +72067,13 @@ var require_factory = /* @__PURE__ */ __commonJSMin(((exports) => {
 	const ocaml_1 = require_ocaml();
 	const php_1 = require_php();
 	const php_yoshi_1 = require_php_yoshi();
+	const php_librarian_1 = require_php_librarian();
 	const python_1 = require_python();
 	const python_librarian_1 = require_python_librarian();
 	const r_1 = require_r();
 	const ruby_1 = require_ruby();
 	const ruby_yoshi_1 = require_ruby_yoshi();
+	const ruby_librarian_1 = require_ruby_librarian();
 	const rust_1 = require_rust();
 	const sfdx_1 = require_sfdx();
 	const simple_1 = require_simple();
@@ -71873,11 +72115,13 @@ var require_factory = /* @__PURE__ */ __commonJSMin(((exports) => {
 		ocaml: (options) => new ocaml_1.OCaml(options),
 		php: (options) => new php_1.PHP(options),
 		"php-yoshi": (options) => new php_yoshi_1.PHPYoshi(options),
+		"php-librarian": (options) => new php_librarian_1.PHPLibrarian(options),
 		python: (options) => new python_1.Python(options),
 		"python-librarian": (options) => new python_librarian_1.PythonLibrarian(options),
 		r: (options) => new r_1.R(options),
 		ruby: (options) => new ruby_1.Ruby(options),
 		"ruby-yoshi": (options) => new ruby_yoshi_1.RubyYoshi(options),
+		"ruby-librarian": (options) => new ruby_librarian_1.RubyLibrarian(options),
 		rust: (options) => new rust_1.Rust(options),
 		salesforce: (options) => new sfdx_1.Sfdx(options),
 		sfdx: (options) => new sfdx_1.Sfdx(options),
@@ -71931,7 +72175,7 @@ var require_factory = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.getReleaserTypes = getReleaserTypes;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/util/pull-request-overflow-handler.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/util/pull-request-overflow-handler.js
 var require_pull_request_overflow_handler = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.FilePullRequestOverflowHandler = void 0;
@@ -71967,7 +72211,8 @@ var require_pull_request_overflow_handler = /* @__PURE__ */ __commonJSMin(((expo
 			const notes = pullRequest.body.toString();
 			if (notes.length > maxSize) {
 				const notesBranchName = `${pullRequest.headRefName}--release-notes`;
-				return `${OVERFLOW_MESSAGE} ${await this.github.createFileOnNewBranch(RELEASE_NOTES_FILENAME, notes, notesBranchName, this.github.repository.defaultBranch)}`;
+				const url = await this.github.createFileOnNewBranch(RELEASE_NOTES_FILENAME, notes, notesBranchName, this.github.repository.defaultBranch);
+				return `${OVERFLOW_MESSAGE} ${url}`;
 			}
 			return notes;
 		}
@@ -71996,7 +72241,7 @@ var require_pull_request_overflow_handler = /* @__PURE__ */ __commonJSMin(((expo
 	exports.FilePullRequestOverflowHandler = FilePullRequestOverflowHandler;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/util/signoff-commit-message.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/util/signoff-commit-message.js
 var require_signoff_commit_message = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.signoffCommitMessage = void 0;
@@ -72010,7 +72255,7 @@ var require_signoff_commit_message = /* @__PURE__ */ __commonJSMin(((exports) =>
 	exports.signoffCommitMessage = signoffCommitMessage;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/util/commit-exclude.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/util/commit-exclude.js
 var require_commit_exclude = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.CommitExclude = void 0;
@@ -72041,7 +72286,7 @@ var require_commit_exclude = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.CommitExclude = CommitExclude;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/manifest.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/manifest.js
 var require_manifest$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Manifest = exports.MANIFEST_PULL_REQUEST_TITLE_PATTERN = exports.SNOOZE_LABEL = exports.DEFAULT_SNAPSHOT_LABELS = exports.DEFAULT_RELEASE_LABELS = exports.DEFAULT_LABELS = exports.DEFAULT_COMPONENT_NAME = exports.ROOT_PROJECT_PATH = exports.DEFAULT_RELEASE_PLEASE_MANIFEST = exports.DEFAULT_RELEASE_PLEASE_CONFIG = void 0;
@@ -73090,7 +73335,7 @@ var require_dist_node$10 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	0 && (module.exports = { RequestError });
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/util/code-suggester/logger.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/util/code-suggester/logger.js
 var require_logger = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.setupLogger = exports.logger = void 0;
@@ -73112,7 +73357,7 @@ var require_logger = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.setupLogger = setupLogger;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/util/code-suggester/default-options-handler.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/util/code-suggester/default-options-handler.js
 var require_default_options_handler = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.addPullRequestDefaults = void 0;
@@ -73183,10 +73428,12 @@ var require_retry_operation = /* @__PURE__ */ __commonJSMin(((exports, module) =
 		}
 		this._errors.push(err);
 		var timeout = this._timeouts.shift();
-		if (timeout === void 0) if (this._cachedTimeouts) {
-			this._errors.splice(0, this._errors.length - 1);
-			timeout = this._cachedTimeouts.slice(-1);
-		} else return false;
+		if (timeout === void 0) {
+			if (this._cachedTimeouts) {
+				this._errors.splice(0, this._errors.length - 1);
+				timeout = this._cachedTimeouts.slice(-1);
+			} else return false;
+		}
 		var self = this;
 		this._timer = setTimeout(function() {
 			self._attempts++;
@@ -73263,7 +73510,7 @@ var require_retry$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 		var opts = {
 			retries: 10,
 			factor: 2,
-			minTimeout: 1 * 1e3,
+			minTimeout: 1e3,
 			maxTimeout: Infinity,
 			randomize: false
 		};
@@ -73357,7 +73604,7 @@ var require_lib = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = retry;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/util/code-suggester/github/branch.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/util/code-suggester/github/branch.js
 var require_branch = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.branch = exports.createBranch = exports.existsBranchWithName = exports.getBranchHead = exports.createRef = void 0;
@@ -73454,7 +73701,7 @@ var require_branch = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.branch = branch;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/util/code-suggester/github/fork.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/util/code-suggester/github/fork.js
 var require_fork = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.fork = void 0;
@@ -73490,7 +73737,7 @@ var require_fork = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.fork = fork;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/util/code-suggester/errors.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/util/code-suggester/errors.js
 var require_errors = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.CommitError = void 0;
@@ -73503,7 +73750,7 @@ var require_errors = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.CommitError = CommitError;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/util/code-suggester/github/create-commit.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/util/code-suggester/github/create-commit.js
 var require_create_commit = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.createCommit = void 0;
@@ -73549,7 +73796,7 @@ var require_create_commit = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.createCommit = createCommit;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/util/code-suggester/github/commit-and-push.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/util/code-suggester/github/commit-and-push.js
 var require_commit_and_push = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.commitAndPush = exports.updateRef = exports.createTree = exports.generateTreeObjects = void 0;
@@ -73669,7 +73916,7 @@ var require_commit_and_push = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.commitAndPush = commitAndPush;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/util/code-suggester/github/open-pull-request.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/util/code-suggester/github/open-pull-request.js
 var require_open_pull_request = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.openPullRequest = void 0;
@@ -73714,7 +73961,7 @@ var require_open_pull_request = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.openPullRequest = openPullRequest;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/util/code-suggester/github/labels.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/util/code-suggester/github/labels.js
 var require_labels = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.addLabels = void 0;
@@ -73743,7 +73990,7 @@ var require_labels = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.addLabels = addLabels;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/util/code-suggester/index.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/util/code-suggester/index.js
 var require_code_suggester = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.createPullRequest = void 0;
@@ -74013,9 +74260,10 @@ var require_dist_node$8 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	function mergeDeep(defaults, options) {
 		const result = Object.assign({}, defaults);
 		Object.keys(options).forEach((key) => {
-			if (isPlainObject(options[key])) if (!(key in defaults)) Object.assign(result, { [key]: options[key] });
-			else result[key] = mergeDeep(defaults[key], options[key]);
-			else Object.assign(result, { [key]: options[key] });
+			if (isPlainObject(options[key])) {
+				if (!(key in defaults)) Object.assign(result, { [key]: options[key] });
+				else result[key] = mergeDeep(defaults[key], options[key]);
+			} else Object.assign(result, { [key]: options[key] });
 		});
 		return result;
 	}
@@ -74088,31 +74336,33 @@ var require_dist_node$8 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	}
 	function getValues(context, operator, key, modifier) {
 		var value = context[key], result = [];
-		if (isDefined(value) && value !== "") if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-			value = value.toString();
-			if (modifier && modifier !== "*") value = value.substring(0, parseInt(modifier, 10));
-			result.push(encodeValue(operator, value, isKeyOperator(operator) ? key : ""));
-		} else if (modifier === "*") if (Array.isArray(value)) value.filter(isDefined).forEach(function(value2) {
-			result.push(encodeValue(operator, value2, isKeyOperator(operator) ? key : ""));
-		});
-		else Object.keys(value).forEach(function(k) {
-			if (isDefined(value[k])) result.push(encodeValue(operator, value[k], k));
-		});
-		else {
-			const tmp = [];
-			if (Array.isArray(value)) value.filter(isDefined).forEach(function(value2) {
-				tmp.push(encodeValue(operator, value2));
-			});
-			else Object.keys(value).forEach(function(k) {
-				if (isDefined(value[k])) {
-					tmp.push(encodeUnreserved(k));
-					tmp.push(encodeValue(operator, value[k].toString()));
-				}
-			});
-			if (isKeyOperator(operator)) result.push(encodeUnreserved(key) + "=" + tmp.join(","));
-			else if (tmp.length !== 0) result.push(tmp.join(","));
-		}
-		else if (operator === ";") {
+		if (isDefined(value) && value !== "") {
+			if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+				value = value.toString();
+				if (modifier && modifier !== "*") value = value.substring(0, parseInt(modifier, 10));
+				result.push(encodeValue(operator, value, isKeyOperator(operator) ? key : ""));
+			} else if (modifier === "*") {
+				if (Array.isArray(value)) value.filter(isDefined).forEach(function(value2) {
+					result.push(encodeValue(operator, value2, isKeyOperator(operator) ? key : ""));
+				});
+				else Object.keys(value).forEach(function(k) {
+					if (isDefined(value[k])) result.push(encodeValue(operator, value[k], k));
+				});
+			} else {
+				const tmp = [];
+				if (Array.isArray(value)) value.filter(isDefined).forEach(function(value2) {
+					tmp.push(encodeValue(operator, value2));
+				});
+				else Object.keys(value).forEach(function(k) {
+					if (isDefined(value[k])) {
+						tmp.push(encodeUnreserved(k));
+						tmp.push(encodeValue(operator, value[k].toString()));
+					}
+				});
+				if (isKeyOperator(operator)) result.push(encodeUnreserved(key) + "=" + tmp.join(","));
+				else if (tmp.length !== 0) result.push(tmp.join(","));
+			}
+		} else if (operator === ";") {
 			if (isDefined(value)) result.push(encodeUnreserved(key));
 		} else if (value === "" && (operator === "&" || operator === "?")) result.push(encodeUnreserved(key) + "=");
 		else if (value === "") result.push("");
@@ -74641,13 +74891,14 @@ var require_dist_node$4 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			this.graphql = (0, import_graphql.withCustomRequest)(this.request).defaults(requestDefaults);
 			this.log = createLogger(options.log);
 			this.hook = hook;
-			if (!options.authStrategy) if (!options.auth) this.auth = async () => ({ type: "unauthenticated" });
-			else {
-				const auth = (0, import_auth_token.createTokenAuth)(options.auth);
-				hook.wrap("request", auth.hook);
-				this.auth = auth;
-			}
-			else {
+			if (!options.authStrategy) {
+				if (!options.auth) this.auth = async () => ({ type: "unauthenticated" });
+				else {
+					const auth = (0, import_auth_token.createTokenAuth)(options.auth);
+					hook.wrap("request", auth.hook);
+					this.auth = auth;
+				}
+			} else {
 				const { authStrategy, ...otherOptions } = options;
 				const auth = authStrategy(Object.assign({
 					request: this.request,
@@ -76578,7 +76829,7 @@ var require_ms = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	}
 }));
 //#endregion
-//#region node_modules/.pnpm/debug@4.4.3/node_modules/debug/src/common.js
+//#region node_modules/.pnpm/debug@4.4.3_supports-color@7.2.0/node_modules/debug/src/common.js
 var require_common = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	/**
 	* This is the common logic for both the Node.js and web browser
@@ -76717,15 +76968,16 @@ var require_common = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			let templateIndex = 0;
 			let starIndex = -1;
 			let matchIndex = 0;
-			while (searchIndex < search.length) if (templateIndex < template.length && (template[templateIndex] === search[searchIndex] || template[templateIndex] === "*")) if (template[templateIndex] === "*") {
-				starIndex = templateIndex;
-				matchIndex = searchIndex;
-				templateIndex++;
-			} else {
-				searchIndex++;
-				templateIndex++;
-			}
-			else if (starIndex !== -1) {
+			while (searchIndex < search.length) if (templateIndex < template.length && (template[templateIndex] === search[searchIndex] || template[templateIndex] === "*")) {
+				if (template[templateIndex] === "*") {
+					starIndex = templateIndex;
+					matchIndex = searchIndex;
+					templateIndex++;
+				} else {
+					searchIndex++;
+					templateIndex++;
+				}
+			} else if (starIndex !== -1) {
 				templateIndex = starIndex + 1;
 				matchIndex++;
 				searchIndex = matchIndex;
@@ -76780,7 +77032,7 @@ var require_common = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = setup;
 }));
 //#endregion
-//#region node_modules/.pnpm/debug@4.4.3/node_modules/debug/src/browser.js
+//#region node_modules/.pnpm/debug@4.4.3_supports-color@7.2.0/node_modules/debug/src/browser.js
 var require_browser = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	/**
 	* This is the web browser implementation of `debug()`.
@@ -76976,7 +77228,7 @@ var require_browser = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	};
 }));
 //#endregion
-//#region node_modules/.pnpm/debug@4.4.3/node_modules/debug/src/node.js
+//#region node_modules/.pnpm/debug@4.4.3_supports-color@7.2.0/node_modules/debug/src/node.js
 var require_node = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	/**
 	* Module dependencies.
@@ -77183,7 +77435,7 @@ var require_node = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	};
 }));
 //#endregion
-//#region node_modules/.pnpm/debug@4.4.3/node_modules/debug/src/index.js
+//#region node_modules/.pnpm/debug@4.4.3_supports-color@7.2.0/node_modules/debug/src/index.js
 var require_src$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	/**
 	* Detect Electron renderer / nwjs process, which is node, but we should
@@ -77387,7 +77639,7 @@ var require_dist$2 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.Agent = Agent;
 }));
 //#endregion
-//#region node_modules/.pnpm/https-proxy-agent@7.0.6/node_modules/https-proxy-agent/dist/parse-proxy-response.js
+//#region node_modules/.pnpm/https-proxy-agent@7.0.6_supports-color@7.2.0/node_modules/https-proxy-agent/dist/parse-proxy-response.js
 var require_parse_proxy_response = /* @__PURE__ */ __commonJSMin(((exports) => {
 	var __importDefault = exports && exports.__importDefault || function(mod) {
 		return mod && mod.__esModule ? mod : { "default": mod };
@@ -77472,7 +77724,7 @@ var require_parse_proxy_response = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.parseProxyResponse = parseProxyResponse;
 }));
 //#endregion
-//#region node_modules/.pnpm/https-proxy-agent@7.0.6/node_modules/https-proxy-agent/dist/index.js
+//#region node_modules/.pnpm/https-proxy-agent@7.0.6_supports-color@7.2.0/node_modules/https-proxy-agent/dist/index.js
 var require_dist$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	var __createBinding = exports && exports.__createBinding || (Object.create ? (function(o, m, k, k2) {
 		if (k2 === void 0) k2 = k;
@@ -77619,7 +77871,7 @@ var require_dist$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	}
 }));
 //#endregion
-//#region node_modules/.pnpm/http-proxy-agent@7.0.2/node_modules/http-proxy-agent/dist/index.js
+//#region node_modules/.pnpm/http-proxy-agent@7.0.2_supports-color@7.2.0/node_modules/http-proxy-agent/dist/index.js
 var require_dist = /* @__PURE__ */ __commonJSMin(((exports) => {
 	var __createBinding = exports && exports.__createBinding || (Object.create ? (function(o, m, k, k2) {
 		if (k2 === void 0) k2 = k;
@@ -77740,11 +77992,11 @@ var require_dist = /* @__PURE__ */ __commonJSMin(((exports) => {
 	}
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/package.json
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/package.json
 var require_package = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = {
 		"name": "release-please",
-		"version": "17.10.0",
+		"version": "17.11.1",
 		"description": "generate release PRs based on the conventionalcommits.org spec",
 		"main": "./build/src/index.js",
 		"bin": "./build/src/bin/release-please.js",
@@ -77821,7 +78073,7 @@ var require_package = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			"figures": "^3.0.0",
 			"http-proxy-agent": "^7.0.0",
 			"https-proxy-agent": "^7.0.0",
-			"js-yaml": "^4.0.0",
+			"js-yaml": "^4.3.0",
 			"jsonpath-plus": "^10.0.0",
 			"node-html-parser": "^6.0.0",
 			"parse-github-repo-url": "^1.4.1",
@@ -77836,13 +78088,15 @@ var require_package = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 		},
 		"engines": { "node": ">=22.0.0" },
 		"overrides": {
-			"tmp": "0.2.6",
-			"serialize-javascript": "^7.0.5"
+			"tmp": "^0.2.7",
+			"serialize-javascript": "^7.0.5",
+			"js-yaml": "^4.3.0",
+			"brace-expansion": "^5.0.8"
 		}
 	};
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/github-api.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/github-api.js
 var require_github_api = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.sleepInMs = exports.wrapAsync = exports.GitHubApi = exports.MAX_ISSUE_BODY_SIZE = exports.MAX_SLEEP_SECONDS = exports.GH_GRAPHQL_URL = exports.GH_API_URL = void 0;
@@ -77877,14 +78131,16 @@ var require_github_api = /* @__PURE__ */ __commonJSMin(((exports) => {
 							throw err;
 						}
 						this.logger.info(`received 502 error, ${maxRetries} attempts remaining`);
-						if (typeof opts.num === "number") if (maxRetries === 1) {
-							this.logger.info("last retry, forcing batch size to 1");
-							opts.num = 1;
-						} else {
-							const nextNum = Math.floor(opts.num / 2);
-							if (nextNum >= 1) {
-								this.logger.info(`halving batch size from ${opts.num} to ${nextNum}`);
-								opts.num = nextNum;
+						if (typeof opts.num === "number") {
+							if (maxRetries === 1) {
+								this.logger.info("last retry, forcing batch size to 1");
+								opts.num = 1;
+							} else {
+								const nextNum = Math.floor(opts.num / 2);
+								if (nextNum >= 1) {
+									this.logger.info(`halving batch size from ${opts.num} to ${nextNum}`);
+									opts.num = nextNum;
+								}
 							}
 						}
 					}
@@ -78093,7 +78349,7 @@ var require_github_api = /* @__PURE__ */ __commonJSMin(((exports) => {
 					}
 				})
 			};
-			return new GitHubApi({
+			const opts = {
 				repository: {
 					owner: options.owner,
 					repo: options.repo,
@@ -78101,7 +78357,8 @@ var require_github_api = /* @__PURE__ */ __commonJSMin(((exports) => {
 				},
 				octokitAPIs: apis,
 				logger: options.logger
-			});
+			};
+			return new GitHubApi(opts);
 		}
 		static async defaultBranch(owner, repo, octokit) {
 			const { data } = await octokit.repos.get({
@@ -78517,10 +78774,10 @@ var require_commonjs$2 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.range = range;
 }));
 //#endregion
-//#region node_modules/.pnpm/brace-expansion@5.0.7/node_modules/brace-expansion/dist/commonjs/index.js
+//#region node_modules/.pnpm/brace-expansion@5.0.9/node_modules/brace-expansion/dist/commonjs/index.js
 var require_commonjs$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.EXPANSION_MAX = void 0;
+	exports.EXPANSION_MAX_LENGTH = exports.EXPANSION_MAX = void 0;
 	exports.expand = expand;
 	const balanced_match_1 = require_commonjs$2();
 	const escSlash = "\0SLASH" + Math.random() + "\0";
@@ -78539,6 +78796,7 @@ var require_commonjs$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	const commaPattern = /\\,/g;
 	const periodPattern = /\\\./g;
 	exports.EXPANSION_MAX = 1e5;
+	exports.EXPANSION_MAX_LENGTH = 4e6;
 	function numeric(str) {
 		return !isNaN(str) ? parseInt(str, 10) : str.charCodeAt(0);
 	}
@@ -78571,9 +78829,9 @@ var require_commonjs$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	}
 	function expand(str, options = {}) {
 		if (!str) return [];
-		const { max = exports.EXPANSION_MAX } = options;
+		const { max = exports.EXPANSION_MAX, maxLength = exports.EXPANSION_MAX_LENGTH } = options;
 		if (str.slice(0, 2) === "{}") str = "\\{\\}" + str.slice(2);
-		return expand_(escapeBraces(str), max, true).map(unescapeBraces);
+		return expand_(escapeBraces(str), max, maxLength, true).map(unescapeBraces);
 	}
 	function embrace(str) {
 		return "{" + str + "}";
@@ -78587,20 +78845,72 @@ var require_commonjs$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	function gte(i, y) {
 		return i >= y;
 	}
-	function expand_(str, max, isTop) {
-		/** @type {string[]} */
-		const expansions = [];
+	function combine(acc, pre, values, max, maxLength, dropEmpties) {
+		const out = [];
+		let length = 0;
+		for (let a = 0; a < acc.length; a++) for (let v = 0; v < values.length; v++) {
+			if (out.length >= max) return out;
+			const expansion = acc[a] + pre + values[v];
+			if (dropEmpties && !expansion) continue;
+			if (length + expansion.length > maxLength) return out;
+			out.push(expansion);
+			length += expansion.length;
+		}
+		return out;
+	}
+	function expandSequence(body, isAlphaSequence, max, maxLength) {
+		const n = body.split(/\.\./);
+		const N = [];
+		/* c8 ignore start */
+		if (n[0] === void 0 || n[1] === void 0) return N;
+		/* c8 ignore stop */
+		const x = numeric(n[0]);
+		const y = numeric(n[1]);
+		const width = Math.max(n[0].length, n[1].length);
+		let incr = n.length === 3 && n[2] !== void 0 ? Math.max(Math.abs(numeric(n[2])), 1) : 1;
+		let test = lte;
+		if (y < x) {
+			incr *= -1;
+			test = gte;
+		}
+		const pad = n.some(isPadded);
+		let length = 0;
+		for (let i = x; test(i, y) && N.length < max; i += incr) {
+			let c;
+			if (isAlphaSequence) {
+				c = String.fromCharCode(i);
+				if (c === "\\") c = "";
+			} else {
+				c = String(i);
+				if (pad) {
+					const need = width - c.length;
+					if (need > 0) {
+						const z = new Array(need + 1).join("0");
+						if (i < 0) c = "-" + z + c.slice(1);
+						else c = z + c;
+					}
+				}
+			}
+			if (length + c.length > maxLength) break;
+			N.push(c);
+			length += c.length;
+		}
+		return N;
+	}
+	function expand_(str, max, maxLength, isTop) {
+		let acc = [""];
+		let dropEmpties = false;
+		let firstGroup = true;
 		for (;;) {
 			const m = (0, balanced_match_1.balanced)("{", "}", str);
-			if (!m) return [str];
+			if (!m) return combine(acc, str, [""], max, maxLength, dropEmpties);
 			const pre = m.pre;
-			if (/\$$/.test(m.pre)) {
-				const post = m.post.length ? expand_(m.post, max, false) : [""];
-				for (let k = 0; k < post.length && k < max; k++) {
-					const expansion = pre + "{" + m.body + "}" + post[k];
-					expansions.push(expansion);
-				}
-				return expansions;
+			if (/\$$/.test(pre)) {
+				acc = combine(acc, pre + "{" + m.body + "}", [""], max, maxLength, dropEmpties && !m.post.length);
+				firstGroup = false;
+				if (!m.post.length) break;
+				str = m.post;
+				continue;
 			}
 			const isNumericSequence = /^-?\d+\.\.-?\d+(?:\.\.-?\d+)?$/.test(m.body);
 			const isAlphaSequence = /^[a-zA-Z]\.\.[a-zA-Z](?:\.\.-?\d+)?$/.test(m.body);
@@ -78612,68 +78922,54 @@ var require_commonjs$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 					isTop = true;
 					continue;
 				}
-				return [str];
+				return combine(acc, pre + "{" + m.body + "}" + m.post, [""], max, maxLength, dropEmpties);
 			}
-			const post = m.post.length ? expand_(m.post, max, false) : [""];
-			let n;
-			if (isSequence) n = m.body.split(/\.\./);
+			if (firstGroup) {
+				dropEmpties = isTop && !isSequence;
+				firstGroup = false;
+			}
+			let values;
+			if (isSequence) values = expandSequence(m.body, isAlphaSequence, max, maxLength);
 			else {
-				n = parseCommaParts(m.body);
+				let n = parseCommaParts(m.body);
 				if (n.length === 1 && n[0] !== void 0) {
-					n = expand_(n[0], max, false).map(embrace);
+					n = expand_(n[0], max, maxLength, false).map(embrace);
 					/* c8 ignore start */
-					if (n.length === 1) return post.map((p) => m.pre + n[0] + p);
-				}
-			}
-			let N;
-			if (isSequence && n[0] !== void 0 && n[1] !== void 0) {
-				const x = numeric(n[0]);
-				const y = numeric(n[1]);
-				const width = Math.max(n[0].length, n[1].length);
-				let incr = n.length === 3 && n[2] !== void 0 ? Math.max(Math.abs(numeric(n[2])), 1) : 1;
-				let test = lte;
-				if (y < x) {
-					incr *= -1;
-					test = gte;
-				}
-				const pad = n.some(isPadded);
-				N = [];
-				for (let i = x; test(i, y) && N.length < max; i += incr) {
-					let c;
-					if (isAlphaSequence) {
-						c = String.fromCharCode(i);
-						if (c === "\\") c = "";
-					} else {
-						c = String(i);
-						if (pad) {
-							const need = width - c.length;
-							if (need > 0) {
-								const z = new Array(need + 1).join("0");
-								if (i < 0) c = "-" + z + c.slice(1);
-								else c = z + c;
-							}
-						}
+					if (n.length === 1) {
+						acc = combine(acc, pre + n[0], [""], max, maxLength, dropEmpties && !m.post.length);
+						if (!m.post.length) break;
+						str = m.post;
+						continue;
 					}
-					N.push(c);
 				}
-			} else {
-				N = [];
-				for (let j = 0; j < n.length; j++) N.push.apply(N, expand_(n[j], max, false));
+				let dropsEmpties = dropEmpties && !m.post.length && !pre;
+				for (let d = 0; dropsEmpties && d < acc.length; d++) if (acc[d]) dropsEmpties = false;
+				values = [];
+				let valuesLength = 0;
+				outer: for (let j = 0; j < n.length; j++) {
+					const expanded = expand_(n[j], max, maxLength, false);
+					for (let k = 0; k < expanded.length; k++) {
+						const v = expanded[k];
+						if (dropsEmpties && !v) continue;
+						if (values.length >= max || valuesLength + v.length > maxLength) break outer;
+						values.push(v);
+						valuesLength += v.length;
+					}
+				}
 			}
-			for (let j = 0; j < N.length; j++) for (let k = 0; k < post.length && expansions.length < max; k++) {
-				const expansion = pre + N[j] + post[k];
-				if (!isTop || isSequence || expansion) expansions.push(expansion);
-			}
-			return expansions;
+			acc = combine(acc, pre, values, max, maxLength, dropEmpties && !m.post.length);
+			if (!m.post.length) break;
+			str = m.post;
 		}
+		return acc;
 	}
 }));
 //#endregion
-//#region node_modules/.pnpm/minimatch@10.2.5/node_modules/minimatch/dist/commonjs/assert-valid-pattern.js
+//#region node_modules/.pnpm/minimatch@10.2.6/node_modules/minimatch/dist/commonjs/assert-valid-pattern.js
 var require_assert_valid_pattern = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.assertValidPattern = void 0;
-	const MAX_PATTERN_LENGTH = 1024 * 64;
+	const MAX_PATTERN_LENGTH = 65536;
 	const assertValidPattern = (pattern) => {
 		if (typeof pattern !== "string") throw new TypeError("invalid pattern");
 		if (pattern.length > MAX_PATTERN_LENGTH) throw new TypeError("pattern is too long");
@@ -78681,7 +78977,7 @@ var require_assert_valid_pattern = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.assertValidPattern = assertValidPattern;
 }));
 //#endregion
-//#region node_modules/.pnpm/minimatch@10.2.5/node_modules/minimatch/dist/commonjs/brace-expressions.js
+//#region node_modules/.pnpm/minimatch@10.2.6/node_modules/minimatch/dist/commonjs/brace-expressions.js
 var require_brace_expressions = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.parseClass = void 0;
@@ -78789,12 +79085,15 @@ var require_brace_expressions = /* @__PURE__ */ __commonJSMin(((exports) => {
 			glob.length - pos,
 			true
 		];
-		if (negs.length === 0 && ranges.length === 1 && /^\\?.$/.test(ranges[0]) && !negate) return [
-			regexpEscape(ranges[0].length === 2 ? ranges[0].slice(-1) : ranges[0]),
-			false,
-			endPos - pos,
-			false
-		];
+		if (negs.length === 0 && ranges.length === 1 && /^\\?.$/.test(ranges[0]) && !negate) {
+			const r = ranges[0].length === 2 ? ranges[0].slice(-1) : ranges[0];
+			return [
+				regexpEscape(r),
+				false,
+				endPos - pos,
+				false
+			];
+		}
 		const sranges = "[" + (negate ? "^" : "") + rangesToString(ranges) + "]";
 		const snegs = "[" + (negate ? "" : "^") + rangesToString(negs) + "]";
 		return [
@@ -78807,7 +79106,7 @@ var require_brace_expressions = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.parseClass = parseClass;
 }));
 //#endregion
-//#region node_modules/.pnpm/minimatch@10.2.5/node_modules/minimatch/dist/commonjs/unescape.js
+//#region node_modules/.pnpm/minimatch@10.2.6/node_modules/minimatch/dist/commonjs/unescape.js
 var require_unescape = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.unescape = void 0;
@@ -78837,7 +79136,7 @@ var require_unescape = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.unescape = unescape;
 }));
 //#endregion
-//#region node_modules/.pnpm/minimatch@10.2.5/node_modules/minimatch/dist/commonjs/ast.js
+//#region node_modules/.pnpm/minimatch@10.2.6/node_modules/minimatch/dist/commonjs/ast.js
 var require_ast = /* @__PURE__ */ __commonJSMin(((exports) => {
 	var _a;
 	Object.defineProperty(exports, "__esModule", { value: true });
@@ -79353,7 +79652,7 @@ var require_ast = /* @__PURE__ */ __commonJSMin(((exports) => {
 	_a = AST;
 }));
 //#endregion
-//#region node_modules/.pnpm/minimatch@10.2.5/node_modules/minimatch/dist/commonjs/escape.js
+//#region node_modules/.pnpm/minimatch@10.2.6/node_modules/minimatch/dist/commonjs/escape.js
 var require_escape = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.escape = void 0;
@@ -79376,7 +79675,7 @@ var require_escape = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.escape = escape;
 }));
 //#endregion
-//#region node_modules/.pnpm/minimatch@10.2.5/node_modules/minimatch/dist/commonjs/index.js
+//#region node_modules/.pnpm/minimatch@10.2.6/node_modules/minimatch/dist/commonjs/index.js
 var require_commonjs = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.unescape = exports.escape = exports.AST = exports.Minimatch = exports.match = exports.makeRe = exports.braceExpand = exports.defaults = exports.filter = exports.GLOBSTAR = exports.sep = exports.minimatch = void 0;
@@ -79944,9 +80243,10 @@ var require_commonjs = /* @__PURE__ */ __commonJSMin(((exports) => {
 					const next = pp[i + 1];
 					const prev = pp[i - 1];
 					if (p !== exports.GLOBSTAR || prev === exports.GLOBSTAR) return;
-					if (prev === void 0) if (next !== void 0 && next !== exports.GLOBSTAR) pp[i + 1] = "(?:\\/|" + twoStar + "\\/)?" + next;
-					else pp[i] = twoStar;
-					else if (next === void 0) pp[i - 1] = prev + "(?:\\/|\\/" + twoStar + ")?";
+					if (prev === void 0) {
+						if (next !== void 0 && next !== exports.GLOBSTAR) pp[i + 1] = "(?:\\/|" + twoStar + "\\/)?" + next;
+						else pp[i] = twoStar;
+					} else if (next === void 0) pp[i - 1] = prev + "(?:\\/|\\/" + twoStar + ")?";
 					else if (next !== exports.GLOBSTAR) {
 						pp[i - 1] = prev + "(?:\\/|\\/" + twoStar + "\\/)" + next;
 						pp[i + 1] = exports.GLOBSTAR;
@@ -80035,7 +80335,7 @@ var require_commonjs = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.minimatch.unescape = unescape_js_1.unescape;
 }));
 //#endregion
-//#region node_modules/.pnpm/@google-automations+git-file-utils@3.0.1/node_modules/@google-automations/git-file-utils/build/src/git-file-utils.js
+//#region node_modules/.pnpm/@google-automations+git-file-utils@3.1.0/node_modules/@google-automations/git-file-utils/build/src/git-file-utils.js
 var require_git_file_utils = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.BranchFileCache = exports.RepositoryFileCache = exports.BranchNotFoundError = exports.FileNotFoundError = exports.DEFAULT_FILE_MODE = void 0;
@@ -80379,7 +80679,7 @@ var require_git_file_utils = /* @__PURE__ */ __commonJSMin(((exports) => {
 	}
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/github.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/github.js
 var require_github = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.sleepInMs = exports.GitHub = void 0;
@@ -80435,14 +80735,16 @@ var require_github = /* @__PURE__ */ __commonJSMin(((exports) => {
 							throw err;
 						}
 						this.logger.info(`received 502 error, ${maxRetries} attempts remaining`);
-						if (typeof opts.num === "number") if (maxRetries === 1) {
-							this.logger.info("last retry, forcing batch size to 1");
-							opts.num = 1;
-						} else {
-							const nextNum = Math.floor(opts.num / 2);
-							if (nextNum >= 1) {
-								this.logger.info(`halving batch size from ${opts.num} to ${nextNum}`);
-								opts.num = nextNum;
+						if (typeof opts.num === "number") {
+							if (maxRetries === 1) {
+								this.logger.info("last retry, forcing batch size to 1");
+								opts.num = 1;
+							} else {
+								const nextNum = Math.floor(opts.num / 2);
+								if (nextNum >= 1) {
+									this.logger.info(`halving batch size from ${opts.num} to ${nextNum}`);
+									opts.num = nextNum;
+								}
 							}
 						}
 					}
@@ -80689,11 +80991,12 @@ var require_github = /* @__PURE__ */ __commonJSMin(((exports) => {
 					labels: pullRequest.labels.nodes.map((node) => node.name),
 					files: (((_g = pullRequest.files) === null || _g === void 0 ? void 0 : _g.nodes) || []).map((node) => node.path)
 				};
-				if (mergePullRequest) if (((_j = (_h = mergePullRequest.files) === null || _h === void 0 ? void 0 : _h.pageInfo) === null || _j === void 0 ? void 0 : _j.hasNextPage) && options.backfillFiles) {
-					this.logger.info(`PR #${mergePullRequest.number} has many files, backfilling`);
-					commit.files = await this.getCommitFiles(graphCommit.sha);
-				} else commit.files = (((_k = mergePullRequest.files) === null || _k === void 0 ? void 0 : _k.nodes) || []).map((node) => node.path);
-				else if (options.backfillFiles) commit.files = await this.getCommitFiles(graphCommit.sha);
+				if (mergePullRequest) {
+					if (((_j = (_h = mergePullRequest.files) === null || _h === void 0 ? void 0 : _h.pageInfo) === null || _j === void 0 ? void 0 : _j.hasNextPage) && options.backfillFiles) {
+						this.logger.info(`PR #${mergePullRequest.number} has many files, backfilling`);
+						commit.files = await this.getCommitFiles(graphCommit.sha);
+					} else commit.files = (((_k = mergePullRequest.files) === null || _k === void 0 ? void 0 : _k.nodes) || []).map((node) => node.path);
+				} else if (options.backfillFiles) commit.files = await this.getCommitFiles(graphCommit.sha);
 				commitData.push(commit);
 			}
 			return {
@@ -81037,7 +81340,7 @@ var require_github = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.sleepInMs = sleepInMs;
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/schemas/config.json
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/schemas/config.json
 var require_config = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = {
 		"$schema": "http://json-schema.org/draft-07/schema#",
@@ -81540,7 +81843,7 @@ var require_config = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	};
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/schemas/manifest.json
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/schemas/manifest.json
 var require_manifest = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = {
 		"$schema": "http://json-schema.org/draft-07/schema#",
@@ -81551,7 +81854,7 @@ var require_manifest = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	};
 }));
 //#endregion
-//#region node_modules/.pnpm/release-please@17.10.0/node_modules/release-please/build/src/index.js
+//#region node_modules/.pnpm/release-please@17.11.1_supports-color@7.2.0/node_modules/release-please/build/src/index.js
 var require_src = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.VERSION = exports.manifestSchema = exports.configSchema = exports.GitHub = exports.setLogger = exports.registerVersioningStrategy = exports.getVersioningStrategyTypes = exports.registerPlugin = exports.getPluginTypes = exports.registerChangelogNotes = exports.getChangelogTypes = exports.registerReleaseType = exports.getReleaserTypes = exports.Manifest = exports.Errors = void 0;
@@ -81631,7 +81934,7 @@ var require_src = /* @__PURE__ */ __commonJSMin(((exports) => {
 	});
 	exports.configSchema = require_config();
 	exports.manifestSchema = require_manifest();
-	exports.VERSION = "17.10.0";
+	exports.VERSION = "17.11.1";
 }));
 //#endregion
 //#region src/main.ts
