@@ -1,5 +1,14 @@
 # Changelog
 
+## [6.0.4](https://github.com/release-please-oss/release-please-action/compare/v6.0.3...v6.0.4) (2026-08-26)
+
+
+### Miscellaneous Chores
+
+* **deps:** update actions/setup-node action to v7 ([#60](https://github.com/release-please-oss/release-please-action/issues/60)) ([05b9beb](https://github.com/release-please-oss/release-please-action/commit/05b9bebb7a143d43af19e8d4284ee16ad3b81ce7))
+* **deps:** update github-actions ([#62](https://github.com/release-please-oss/release-please-action/issues/62)) ([19b2108](https://github.com/release-please-oss/release-please-action/commit/19b2108bb8818926867ef4c2341de16a7bb06e82))
+* **deps:** update npm dependencies ([#63](https://github.com/release-please-oss/release-please-action/issues/63)) ([76e8e27](https://github.com/release-please-oss/release-please-action/commit/76e8e2756db3880d00a87270480c0efa98f77588))
+
 ## [6.0.3](https://github.com/release-please-oss/release-please-action/compare/v6.0.2...v6.0.3) (2026-07-06)
 
 
