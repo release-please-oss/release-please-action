@@ -20,7 +20,7 @@ permissions: {}
 jobs:
   zizmor:
     name: Zizmor
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       security-events: write # For advanced security reports
       contents: read # Recommended reads to avoid GraphQL/SAST gaps
@@ -41,7 +41,7 @@ jobs:
 
   actionlint:
     name: Actionlint
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
     steps:
