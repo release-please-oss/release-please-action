@@ -1,5 +1,18 @@
 # Changelog
 
+## [6.0.4](https://github.com/release-please-oss/release-please-action/compare/v6.0.3...v6.0.4) (2026-10-25)
+
+
+### Miscellaneous Chores
+
+* **deps:** update actions/setup-node action to v7 ([#60](https://github.com/release-please-oss/release-please-action/issues/60)) ([05b9beb](https://github.com/release-please-oss/release-please-action/commit/05b9bebb7a143d43af19e8d4284ee16ad3b81ce7))
+* **deps:** update dependency ubuntu to v26 ([#65](https://github.com/release-please-oss/release-please-action/issues/65)) ([cb96863](https://github.com/release-please-oss/release-please-action/commit/cb96863484648dd194909ea4f23d4ef89b4e8f1b))
+* **deps:** update github-actions ([#62](https://github.com/release-please-oss/release-please-action/issues/62)) ([19b2108](https://github.com/release-please-oss/release-please-action/commit/19b2108bb8818926867ef4c2341de16a7bb06e82))
+* **deps:** update github-actions ([#64](https://github.com/release-please-oss/release-please-action/issues/64)) ([a440661](https://github.com/release-please-oss/release-please-action/commit/a44066198f4c370e2c1bfa92edfa43b2eb6d1f5b))
+* **deps:** update npm dependencies ([#63](https://github.com/release-please-oss/release-please-action/issues/63)) ([76e8e27](https://github.com/release-please-oss/release-please-action/commit/76e8e2756db3880d00a87270480c0efa98f77588))
+* **deps:** update npm dependencies ([#66](https://github.com/release-please-oss/release-please-action/issues/66)) ([1ae85cc](https://github.com/release-please-oss/release-please-action/commit/1ae85cca7b076ef60d9c3123e7ff6ccfafbda652))
+* **deps:** update npm dependencies (major) ([#67](https://github.com/release-please-oss/release-please-action/issues/67)) ([b88e859](https://github.com/release-please-oss/release-please-action/commit/b88e85927794014c910cdaecd6cd1e77eaeb4ae7))
+
 ## [6.0.3](https://github.com/release-please-oss/release-please-action/compare/v6.0.2...v6.0.3) (2026-07-06)
 
 
