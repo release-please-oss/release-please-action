@@ -4,7 +4,6 @@ author: Release Please OSS
 branding:
   icon: check-circle
   color: white
-  description: 'Automated releases based on conventional commits'
 inputs:
   token:
     description: 'GitHub token for creating and grooming release PRs, defaults to using secrets.GITHUB_TOKEN'
@@ -78,6 +77,38 @@ inputs:
     description: 'Release Please configuration file as JSON string. Can be used to specify properties not exposed by this action.'
     required: false
     default: '{}'
+outputs:
+  # Monorepo components also emit <path>--<output> (e.g. packages/foo--release_created); see README
+  releases_created:
+    description: 'true if any release was created, false otherwise'
+  paths_released:
+    description: 'JSON array of paths that had releases created'
+  prs_created:
+    description: 'true if any pull request was created or updated'
+  pr:
+    description: 'JSON of the first PullRequest object (unset if none)'
+  prs:
+    description: 'JSON array of PullRequest objects (unset if none)'
+  release_created:
+    description: 'true if a root component release was created'
+  upload_url:
+    description: 'Root release upload URL'
+  html_url:
+    description: 'Root release HTML URL'
+  tag_name:
+    description: 'Root release tag name'
+  version:
+    description: 'Root release full semver'
+  major:
+    description: 'Root release major version'
+  minor:
+    description: 'Root release minor version'
+  patch:
+    description: 'Root release patch version'
+  sha:
+    description: 'SHA the root release was tagged at'
+  body:
+    description: 'Root release notes'
 runs:
   using: 'node24'
   main: 'dist/index.js'
