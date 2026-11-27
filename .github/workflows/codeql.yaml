@@ -1,0 +1,45 @@
+name: 'CodeQL'
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '30 2 * * 1'
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: 'Analyze'
+    runs-on: ubuntu-26.04
+    permissions:
+      security-events: write # Upload CodeQL results
+      contents: read
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
+        with:
+          languages: actions, javascript-typescript
+          build-mode: none
+          # dist/ is bundled third-party code; dependency vulnerabilities are covered by Renovate and pnpm
+          config: |
+            paths-ignore:
+              - dist
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
