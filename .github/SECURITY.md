@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-Only the latest major version (`v6`) receives security fixes.
+Only the latest release receives security fixes.
 
 ## Reporting a Vulnerability
 

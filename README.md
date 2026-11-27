@@ -11,7 +11,19 @@ Automate releases with Conventional Commit Messages.
 This project is a fork of [googleapis/release-please-action](https://github.com/googleapis/release-please-action),
 originally created by Google and licensed under Apache 2.0.
 
+## Versioning
+
+This action publishes only immutable, full-version releases. There are no rolling major or minor tags
+(such as `v7` or `v7.0`), because a tag that moves can silently change the code your workflows run.
+
+Pin a full version, or better, a commit SHA with the version in a comment, and let
+[Renovate](https://docs.renovatebot.com/modules/manager/github-actions/) or
+[Dependabot](https://docs.github.com/en/code-security/dependabot/working-with-dependabot/keeping-your-actions-up-to-date-with-dependabot)
+propose updates.
+
 ## Basic Configuration
+
+<!-- x-release-please-start-version -->
 
 1. Create a `.github/workflows/release-please.yml` file with these contents:
 
@@ -32,7 +44,7 @@ originally created by Google and licensed under Apache 2.0.
      release-please:
        runs-on: ubuntu-latest
        steps:
-         - uses: release-please-oss/release-please-action@v5
+         - uses: release-please-oss/release-please-action@v6.0.5
            with:
              # this assumes that you have created a personal access token
              # (PAT) and configured it as a GitHub action secret named
@@ -47,10 +59,14 @@ originally created by Google and licensed under Apache 2.0.
    configuration option, but allows for no further customization. For advanced
    configuration options, see the [Advanced Configuration section](#advanced-release-configuration)
 
+<!-- x-release-please-end -->
+
 2. Merge the above action into your repository and make sure new commits follow
    the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
    convention, [release-please](https://github.com/googleapis/release-please)
    will start creating Release PRs for you.
+
+<!-- x-release-please-start-version -->
 
 ## Advanced Release Configuration
 
@@ -61,7 +77,7 @@ and then configure this action as follows:
 ```yaml
 #...(same as above)
 steps:
-  - uses: release-please-oss/release-please-action@v5
+  - uses: release-please-oss/release-please-action@v6.0.5
     with:
       # this assumes that you have created a personal access token
       # (PAT) and configured it as a GitHub action secret named
@@ -81,7 +97,7 @@ in your workflow file.
 
 ```yaml
 steps:
-  - uses: release-please-oss/release-please-action@v5
+  - uses: release-please-oss/release-please-action@v6.0.5
     with:
       token: ${{ secrets.MY_RELEASE_PLEASE_TOKEN }}
       release-type: simple
@@ -110,7 +126,7 @@ inputs taking precedence over the JSON configuration.
 
 ```yaml
 steps:
-  - uses: release-please-oss/release-please-action@v5
+  - uses: release-please-oss/release-please-action@v6.0.5
     with:
       token: ${{ secrets.MY_RELEASE_PLEASE_TOKEN }}
       release-type: simple
@@ -333,7 +349,7 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: release-please-oss/release-please-action@v5
+      - uses: release-please-oss/release-please-action@v6.0.5
         with:
           release-type: node
           # The short ref name of the branch or tag that triggered
@@ -356,7 +372,7 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: release-please-oss/release-please-action@v5
+      - uses: release-please-oss/release-please-action@v6.0.5
         id: release
         with:
           release-type: node
@@ -382,49 +398,6 @@ jobs:
 > `registry-url` to your own [Wombat Dressing Room](https://github.com/GoogleCloudPlatform/wombat-dressing-room)
 > deployment.
 
-## Creating major/minor tags
-
-If you are using release-please to publish a GitHub action, you will
-likely want to tag a major and minor tag during a release, i.e., if you
-are releasing `v2.8.3`, you will also want to update tags `v2` and `v2.8`. This allows your
-users to pin to `v2`, and get updates to your library without updating their
-workflows.
-
-The `release-please-action` has the outputs `major`, `minor`, and
-`release_created` to facilitate this. These outputs can be used conditionally,
-like so:
-
-```yaml
-on:
-  push:
-    branches:
-      - main
-name: release-please
-jobs:
-  release-please:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: release-please-oss/release-please-action@v5
-        id: release
-        with:
-          release-type: node
-      - uses: actions/checkout@v4
-      - name: tag major and minor versions
-        if: ${{ steps.release.outputs.release_created }}
-        run: |
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git remote add gh-token "https://${{ secrets.GITHUB_TOKEN }}@github.com/release-please-oss/release-please-action.git"
-          git tag -d v${{ steps.release.outputs.major }} || true
-          git tag -d v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
-          git push origin :v${{ steps.release.outputs.major }} || true
-          git push origin :v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
-          git tag -a v${{ steps.release.outputs.major }} -m "Release v${{ steps.release.outputs.major }}"
-          git tag -a v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} -m "Release v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}"
-          git push origin v${{ steps.release.outputs.major }}
-          git push origin v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}
-```
-
 ## Attaching files to the GitHub release
 
 You can attach additional files, such as release artifacts, to the GitHub release that is created. The `gh` CLI tool,
@@ -442,7 +415,7 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: release-please-oss/release-please-action@v5
+      - uses: release-please-oss/release-please-action@v6.0.5
         id: release
         with:
           release-type: node
@@ -452,6 +425,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload ${{ steps.release.outputs.tag_name }} ./artifact/some-build-artifact.zip
 ```
+
+<!-- x-release-please-end -->
 
 ## Upgrading from v3 to v4
 
