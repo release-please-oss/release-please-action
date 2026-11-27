@@ -14,10 +14,9 @@
       "addLabels": ["github-actions", "no-release"]
     },
     {
-      "matchPackageNames": ["release-please-oss/**"],
-      "matchManagers": ["github-actions"],
-      "pinDigests": false,
-      "enabled": false
+      "description": "Our own fork is exempt from the release-age wait, matching pnpm-workspace.yaml",
+      "matchPackageNames": ["@release-please-oss/release-please"],
+      "minimumReleaseAge": null
     },
     {
       "matchPackageNames": ["node", "@types/node"],
