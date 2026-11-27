@@ -23,7 +23,7 @@ jobs:
         with:
           persist-credentials: 'false'
       - name: Install pnpm
-        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
       - name: Setup Node environment
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -35,7 +35,7 @@ jobs:
       - name: Run build
         run: pnpm run build
       - name: Generate GitHub token
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
         id: token
         with:
           client-id: ${{ secrets.RELEASE_PLEASE_OSS_BOT_CLIENT_ID }}
@@ -44,7 +44,7 @@ jobs:
           permission-pull-requests: write
       - name: Create Pull Request
         # zizmor: ignore[superfluous-actions]
-        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        uses: peter-evans/create-pull-request@3ffccacd46053766916f087ce41d627c0b8cf2d1 # v8.1.3
         with:
           token: ${{ steps.token.outputs.token }}
           title: 'chore: automated dist build'
