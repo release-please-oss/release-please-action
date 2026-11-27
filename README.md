@@ -63,7 +63,7 @@ propose updates.
 
 2. Merge the above action into your repository and make sure new commits follow
    the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
-   convention, [release-please](https://github.com/googleapis/release-please)
+   convention, [release-please](https://github.com/release-please-oss/release-please)
    will start creating Release PRs for you.
 
 <!-- x-release-please-start-version -->

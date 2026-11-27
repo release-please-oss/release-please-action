@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
+import { GitHub, Manifest } from '@release-please-oss/release-please';
 import nock from 'nock';
-import { GitHub, Manifest } from 'release-please';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as action from './main';
 
