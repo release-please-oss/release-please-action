@@ -15,19 +15,12 @@ jobs:
   build-dist:
     name: 'Build dist'
     runs-on: ubuntu-26.04
+    permissions:
+      contents: read
     steps:
-      - name: Generate GitHub token
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
-        id: token
-        with:
-          client-id: ${{ secrets.RELEASE_PLEASE_OSS_BOT_CLIENT_ID }}
-          private-key: ${{ secrets.RELEASE_PLEASE_OSS_BOT_PRIVATE_KEY }}
-          permission-contents: write
-          permission-pull-requests: write
       - name: Checkout sources
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          token: ${{ steps.token.outputs.token }}
           persist-credentials: 'false'
       - name: Install pnpm
         uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
@@ -41,6 +34,14 @@ jobs:
         run: pnpm install --no-runtime --prefer-offline --frozen-lockfile
       - name: Run build
         run: pnpm run build
+      - name: Generate GitHub token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        id: token
+        with:
+          client-id: ${{ secrets.RELEASE_PLEASE_OSS_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_PLEASE_OSS_BOT_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
       - name: Create Pull Request
         # zizmor: ignore[superfluous-actions]
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
