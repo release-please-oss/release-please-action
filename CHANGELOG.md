@@ -1,5 +1,23 @@
 # Changelog
 
+## [6.0.5](https://github.com/release-please-oss/release-please-action/compare/v6.0.4...v6.0.5) (2026-11-27)
+
+
+### Bug Fixes
+
+* **action:** declare outputs and drop invalid branding key ([#74](https://github.com/release-please-oss/release-please-action/issues/74)) ([e05d202](https://github.com/release-please-oss/release-please-action/commit/e05d2027c77969edf4c448c624a35231dc3565d9))
+* **deps:** patch vulnerable bundled dependencies ([#69](https://github.com/release-please-oss/release-please-action/issues/69)) ([6aa8279](https://github.com/release-please-oss/release-please-action/commit/6aa8279eddabdb8c3200d97bdebeabeae7d7843b))
+
+
+### Miscellaneous Chores
+
+* **renovate:** enable OSV vulnerability alerts ([#71](https://github.com/release-please-oss/release-please-action/issues/71)) ([dc165a2](https://github.com/release-please-oss/release-please-action/commit/dc165a2a31978314caf86034b96fa87551742b80))
+
+
+### Documentation
+
+* add security policy ([#73](https://github.com/release-please-oss/release-please-action/issues/73)) ([648e7ed](https://github.com/release-please-oss/release-please-action/commit/648e7ed4852d5cc390df4bb7ccda7aeead30fd61))
+
 ## [6.0.4](https://github.com/release-please-oss/release-please-action/compare/v6.0.3...v6.0.4) (2026-10-25)
 
 
