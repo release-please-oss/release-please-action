@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@actions/core": "^3.0.1",
-    "release-please": "^17.7.0",
+    "@release-please-oss/release-please": "^17.11.3",
     "source-map-support": "^0.5.21"
   },
   "devDependencies": {
