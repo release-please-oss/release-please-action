@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.0.1](https://github.com/release-please-oss/release-please-action/compare/v7.0.0...v7.0.1) (2026-11-28)
+
+
+### Miscellaneous Chores
+
+* add GitHub Sponsors funding link ([#82](https://github.com/release-please-oss/release-please-action/issues/82)) ([4b56079](https://github.com/release-please-oss/release-please-action/commit/4b560796cb0266c97e23a1008c090750b6e25032))
+
 ## [7.0.0](https://github.com/release-please-oss/release-please-action/compare/v6.0.5...v7.0.0) (2026-11-27)
 
 

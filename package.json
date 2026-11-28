@@ -1,6 +1,6 @@
 {
   "name": "release-please-action",
-  "version": "7.0.0",
+  "version": "7.0.1",
   "private": true,
   "description": "automated releases based on conventional commits",
   "keywords": [
