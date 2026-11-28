@@ -1,5 +1,25 @@
 # Changelog
 
+## [7.0.0](https://github.com/release-please-oss/release-please-action/compare/v6.0.5...v7.0.0) (2026-11-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* switch to @release-please-oss/release-please ([#78](https://github.com/release-please-oss/release-please-action/issues/78))
+* stop publishing rolling major and minor tags ([#75](https://github.com/release-please-oss/release-please-action/issues/75))
+
+### Features
+
+* switch to @release-please-oss/release-please ([#78](https://github.com/release-please-oss/release-please-action/issues/78)) ([67b7a13](https://github.com/release-please-oss/release-please-action/commit/67b7a139d08b307aeb2eaad98fe6bd7805e682de))
+
+
+### Miscellaneous Chores
+
+* **deps:** update github-actions ([#76](https://github.com/release-please-oss/release-please-action/issues/76)) ([31bc93f](https://github.com/release-please-oss/release-please-action/commit/31bc93fd24bcc68f5ffbfab350dd0636197d462b))
+* **deps:** update npm dependencies ([#80](https://github.com/release-please-oss/release-please-action/issues/80)) ([57a1c26](https://github.com/release-please-oss/release-please-action/commit/57a1c26ee7a98c5cd45fb9f2c95f423caf4ad435))
+* **renovate:** drop unused self-action rule and exempt fork from release age ([#79](https://github.com/release-please-oss/release-please-action/issues/79)) ([4673510](https://github.com/release-please-oss/release-please-action/commit/46735100f2c6d8b5b903ae29086bbd7fe8c3cd68))
+* stop publishing rolling major and minor tags ([#75](https://github.com/release-please-oss/release-please-action/issues/75)) ([f5019f7](https://github.com/release-please-oss/release-please-action/commit/f5019f74f5e3295525105be61f9274e086f648c8))
+
 ## [6.0.5](https://github.com/release-please-oss/release-please-action/compare/v6.0.4...v6.0.5) (2026-11-27)
 
 
